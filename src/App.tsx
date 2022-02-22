@@ -1,25 +1,31 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import Router from "./router";
+import { MantineProvider } from "@mantine/core";
+import { QueryClient, QueryClientProvider } from "react-query";
+import { AuthContextProvider } from "./context/AuthContext";
+const queryClient = new QueryClient();
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <>
+      <QueryClientProvider client={queryClient}>
+        <AuthContextProvider>
+          <MantineProvider
+            theme={{
+              breakpoints: {
+                xs: 500,
+                sm: 800,
+                md: 1000,
+                lg: 1200,
+                xl: 1400,
+              },
+            }}
+            emotionOptions={{ key: "mantine", prepend: false }}
+          >
+            <Router />
+          </MantineProvider>
+        </AuthContextProvider>
+      </QueryClientProvider>
+    </>
   );
 }
 
