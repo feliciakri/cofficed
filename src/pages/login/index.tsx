@@ -25,9 +25,7 @@ const Login = () => {
     axios
       .post(`${process.env.REACT_APP_API_KEY}/users/login`, data)
       .then((res: AxiosResponse) => {
-        const role = "employee";
-        const isAdmin = role.toLowerCase() === "admin";
-        const isEmployee = role.toLowerCase() === "employee";
+        const role = res.data.data.role;
         localStorage.setItem(
           "users",
           JSON.stringify({ ...res.data.data, role: role })
@@ -36,14 +34,7 @@ const Login = () => {
           type: AuthActionKind.LOGIN_SUCCESS,
           payload: { token: res.data.data.token, role: role },
         });
-
-        if (isAdmin) {
-          navigate("/dashboard-admin");
-        } else if (isEmployee) {
-          navigate("/dashboard");
-        } else {
-          navigate("/login");
-        }
+        navigate("/dashboard");
       })
       .catch((err: any) => {
         setIsFailed(true);
