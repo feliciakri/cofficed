@@ -157,7 +157,9 @@ const Layout = () => {
           </Header>
         }
       >
-        <Outlet />
+        <div className="py-6 px-5">
+          <Outlet />
+        </div>
       </AppShell>
     </>
   );

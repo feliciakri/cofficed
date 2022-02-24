@@ -5,6 +5,9 @@ module.exports = {
       fontFamily: {
         fraunces: ['"Fraunces"'],
       },
+      sun: {
+        50: "#F1EBE5",
+      },
     },
   },
   plugins: [],
