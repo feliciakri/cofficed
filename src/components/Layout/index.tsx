@@ -93,7 +93,7 @@ const Layout = () => {
                 Schedule
               </NavLink>
               <NavLink
-                to="/dashboard-employee/vaccin"
+                to="/dashboard-employee/vaccine"
                 className={({ isActive }) =>
                   `${
                     isActive ? "bg-gray-200" : ""
