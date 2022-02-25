@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Layout from "../components/Layout";
 import { AuthContext } from "../context/AuthContext";
 import DashboardEmployee from "../pages/dashboard-employee";
+import DashboardEmployeeSchedule from "../pages/dashboard-employee/schedule";
 import Login from "../pages/login";
 
 const Router = () => {
@@ -16,7 +17,13 @@ const Router = () => {
         {!isLogged && <Route path="/" element={<Login />} />}
         <Route path="/" element={<Layout />}>
           {isLogged && (
-            <Route path="/dashboard" element={<DashboardEmployee />} />
+            <>
+              <Route path="/dashboard" element={<DashboardEmployee />} />
+              <Route
+                path="/dashboard-employee/schedule"
+                element={<DashboardEmployeeSchedule />}
+              />
+            </>
           )}
         </Route>
       </Routes>
