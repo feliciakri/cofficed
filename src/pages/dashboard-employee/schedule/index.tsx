@@ -112,6 +112,8 @@ const getAllAttends = async (token: string | null) => {
           status: "",
           employee: "",
           time: "",
+          office: "",
+          order: "",
         },
         headers: {
           Authorization: `Bearer ${token}`,
@@ -127,7 +129,6 @@ const getAttendsByParams = async (attendecesByDays: AttendancesDay) => {
   const { token, date, office } = attendecesByDays;
 
   if (token && date && office) {
-    console.log(office);
     const dates = moment(date).format("YYYY-MM-DD");
     const data = await axios
       .get(`${process.env.REACT_APP_API_KEY}/attendances/`, {
@@ -135,6 +136,8 @@ const getAttendsByParams = async (attendecesByDays: AttendancesDay) => {
           status: "",
           employee: "",
           time: dates,
+          office: office,
+          order: "",
         },
         headers: {
           Authorization: `Bearer ${token}`,
