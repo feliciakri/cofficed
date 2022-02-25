@@ -1,5 +1,14 @@
 import { Outlet } from "react-router-dom";
-import { CalendarBlank, Syringe, HouseLine, CaretRight } from "phosphor-react";
+import {
+  CalendarBlank,
+  Syringe,
+  HouseLine,
+  CaretRight,
+  CalendarCheck,
+  Scroll,
+  UserPlus,
+  DotsThreeOutline,
+} from "phosphor-react";
 import { Link } from "react-router-dom";
 import {
   AppShell,
@@ -93,7 +102,7 @@ const Layout = () => {
                 Schedule
               </NavLink>
               <NavLink
-                to="/dashboard-employee/vaccin"
+                to="/dashboard-employee/vaccine"
                 className={({ isActive }) =>
                   `${
                     isActive ? "bg-gray-200" : ""
@@ -103,6 +112,52 @@ const Layout = () => {
                 <Syringe size={20} />
                 Vaccine
               </NavLink>
+              {isAdmin && (
+                <>
+                  <NavLink
+                    to="/dashboard-admin/quota-schedule"
+                    className={({ isActive }) =>
+                      `${
+                        isActive ? "bg-gray-200" : ""
+                      } flex flex-row items-center w-full hover:bg-gray-200 cursor-point py-3 px-2 my-1 gap-x-4 rounded-md`
+                    }
+                  >
+                    <CalendarCheck size={20} />
+                    <div className="bg-red-200 px-2 rounded-xl text-red-900 text-sm font-semibold">
+                      Admin
+                    </div>
+                    Quota Schedule
+                  </NavLink>
+                  <NavLink
+                    to="/dashboard-admin/vaccine"
+                    className={({ isActive }) =>
+                      `${
+                        isActive ? "bg-gray-200" : ""
+                      } flex flex-row items-center w-full hover:bg-gray-200 cursor-point py-3 px-2 my-1 gap-x-4 rounded-md`
+                    }
+                  >
+                    <Scroll size={20} />
+                    <div className="bg-red-200 px-2 rounded-xl text-red-900 text-sm font-semibold">
+                      Admin
+                    </div>
+                    Vaccine Certificates
+                  </NavLink>
+                  <NavLink
+                    to="/dashboard-admin/wfo-request"
+                    className={({ isActive }) =>
+                      `${
+                        isActive ? "bg-gray-200" : ""
+                      } flex flex-row items-center w-full hover:bg-gray-200 cursor-point py-3 px-2 my-1 gap-x-4 rounded-md`
+                    }
+                  >
+                    <UserPlus size={20} />
+                    <div className="bg-red-200 px-2 rounded-xl text-red-900 text-sm font-semibold">
+                      Admin
+                    </div>
+                    WFO Requests
+                  </NavLink>
+                </>
+              )}
             </Navbar.Section>
             <Navbar.Section>
               <hr className="my-2" />
@@ -135,13 +190,6 @@ const Layout = () => {
                   />
                   <h1 className="text-xl">Coffee</h1>
                 </div>
-                {isAdmin && (
-                  <div>
-                    <Button color="dark" rightIcon={<CaretRight size={20} />}>
-                      <Link to="/dashboard-admin">Admin Panel</Link>
-                    </Button>
-                  </div>
-                )}
               </div>
 
               <MediaQuery largerThan="sm" styles={{ display: "none" }}>
@@ -157,7 +205,9 @@ const Layout = () => {
           </Header>
         }
       >
-        <Outlet />
+        <div className="py-6 px-5">
+          <Outlet />
+        </div>
       </AppShell>
     </>
   );
