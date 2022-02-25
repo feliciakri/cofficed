@@ -93,7 +93,7 @@ const Layout = () => {
                 Schedule
               </NavLink>
               <NavLink
-                to="/dashboard-employee/vaccin"
+                to="/dashboard-employee/vaccine"
                 className={({ isActive }) =>
                   `${
                     isActive ? "bg-gray-200" : ""
@@ -157,7 +157,9 @@ const Layout = () => {
           </Header>
         }
       >
-        <Outlet />
+        <div className="py-6 px-5">
+          <Outlet />
+        </div>
       </AppShell>
     </>
   );
