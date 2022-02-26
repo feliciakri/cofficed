@@ -29,7 +29,7 @@ const Router = () => {
           {isLogged && isAdmin && (
             <>
               <Route
-                path="/dashboard-admin/quota-admin"
+                path="/dashboard-admin/quota-schedule"
                 element={<DashboardAdmin />}
               />
             </>
