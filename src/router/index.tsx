@@ -2,6 +2,7 @@ import { useContext } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Layout from "../components/Layout";
 import { AuthContext } from "../context/AuthContext";
+import DashboardAdminRequest from "../pages/dashboard-admin/request";
 import DashboardEmployee from "../pages/dashboard-employee";
 import DashboardEmployeeSchedule from "../pages/dashboard-employee/schedule";
 import Login from "../pages/login";
@@ -22,6 +23,14 @@ const Router = () => {
               <Route
                 path="/dashboard-employee/schedule"
                 element={<DashboardEmployeeSchedule />}
+              />
+            </>
+          )}
+          {isLogged && isAdmin && (
+            <>
+              <Route
+                path="/dashboard-admin/wfo-request"
+                element={<DashboardAdminRequest />}
               />
             </>
           )}

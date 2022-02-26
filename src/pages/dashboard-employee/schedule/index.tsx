@@ -150,6 +150,7 @@ const getAttendsByParams = async (attendecesByDays: AttendancesDay) => {
 };
 const getCalendar = async (category: any) => {
   if (category) {
+    console.log(category.id);
     const data = await axios.get(`${process.env.REACT_APP_API_KEY}/days/`, {
       params: {
         office: category.name,
