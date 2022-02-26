@@ -1,5 +1,6 @@
 export type CalendarTypeProps = {
   id: string;
+  office: string;
   date: string;
-  Quota: number;
+  quota: number;
 };

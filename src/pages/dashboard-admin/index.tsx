@@ -2,8 +2,9 @@ import { useContext, useEffect, useState } from "react";
 import axios from "axios";
 import { useMediaQuery } from "@mantine/hooks";
 import { useMutation, useQuery, useQueryClient } from "react-query";
-import DateComponent from "../../components/Calendar";
+import moment from "moment";
 import { CalendarTypeProps } from "../../types/type";
+import DateComponent from "../../components/Calendar";
 import { changeToDate } from "../../utils/formatDateMoment";
 import { Button, Input, Select, Modal, Alert } from "@mantine/core";
 import { AuthContext } from "../../context/AuthContext";
@@ -21,7 +22,7 @@ type ModalUpdate = {
   isOpen: boolean;
   setIsOpen: (arg: boolean) => void;
   filteredCalendar: CalendarTypeProps | undefined;
-  updateQuota: any;
+  updateQuota: (arg: number) => void;
   isError: boolean;
 };
 
@@ -29,11 +30,8 @@ const fetchCategory = async () => {
   const { data } = await axios.get(`${process.env.REACT_APP_API_KEY}/offices/`);
   return data.data;
 };
-type CategoryState = {
-  id: string;
-  name: string;
-};
-const getCalendar = async (category: CategoryState | undefined) => {
+
+const getCalendar = async (category: LocationState | undefined) => {
   if (category) {
     const data = await axios
       .get(`${process.env.REACT_APP_API_KEY}/days/`, {
@@ -62,18 +60,19 @@ const putQuota = async (dayUpdate: PutQuota) => {
   return response.data;
 };
 
-const ModalUpdateQuota: React.FC<ModalUpdate> = ({
+const ModalUpdateQuota = ({
   isOpen,
   setIsOpen,
   filteredCalendar,
   updateQuota,
   isError,
-}) => {
+}: ModalUpdate) => {
   const [isQuota, setIsQuota] = useState<number>(0);
+  const date = moment(filteredCalendar?.date).format("DD MMMM YYYY");
   return (
     <>
       <Modal
-        title="Request Work from Office"
+        title="Quota Work From Office"
         centered
         styles={{
           header: { paddingLeft: 20, paddingRight: 20, paddingTop: 10 },
@@ -84,7 +83,7 @@ const ModalUpdateQuota: React.FC<ModalUpdate> = ({
       >
         {filteredCalendar && (
           <>
-            <div className="bg-blue-100 px-4 w-full flex flex-col justify-between py-4">
+            <div className="bg-blue-100 w-full flex flex-col justify-between py-4">
               {isError && (
                 <div className="my-2">
                   <Alert title="Failed :(" color="red">
@@ -92,15 +91,30 @@ const ModalUpdateQuota: React.FC<ModalUpdate> = ({
                   </Alert>
                 </div>
               )}
-
-              <h1>Qoute WFO {filteredCalendar.Quota}</h1>
-              <div className="w-1/4">
-                <Input onChange={(e: any) => setIsQuota(e.target.value)} />
+              <div className="mx-4 flex flex-row">
+                <div className="w-1/2">
+                  <label className="text-sm">Date</label>
+                  <p className="font-semibold">{date}</p>
+                </div>
+                <div className="w-1/2">
+                  <label className="text-sm">Location</label>
+                  <p className="font-semibold">{filteredCalendar.office}</p>
+                </div>
               </div>
             </div>
-            <div className="px-4 py-4 flex justify-end gap-x-4">
-              <Button>Kembali</Button>
-              <Button onClick={() => updateQuota(isQuota)}>Update Qouta</Button>
+            <div className="mx-4">
+              <div className="my-3 flex flex-col gap-y-2">
+                <h1>Quota WFO</h1>
+                <div className="w-1/4">
+                  <Input onChange={(e: any) => setIsQuota(e.target.value)} />
+                </div>
+              </div>
+              <div className="py-4 flex justify-end gap-x-4">
+                <Button variant="outline">Kembali</Button>
+                <Button onClick={() => updateQuota(isQuota)}>
+                  Update Qouta
+                </Button>
+              </div>
             </div>
           </>
         )}
@@ -112,13 +126,12 @@ const ModalUpdateQuota: React.FC<ModalUpdate> = ({
 const DashboardAdmin = () => {
   const queryClient = useQueryClient();
   const [filteredCategory, setFilteredCategory] = useState<
-    CategoryState | undefined
+    LocationState | undefined
   >();
   const [filteredCalendar, setFilteredCalendar] = useState<
     CalendarTypeProps | undefined
   >();
   const [isLocation, setIsLocation] = useState<LocationState[]>([]);
-
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [isSucces, setIsSucces] = useState<boolean>(false);
   const [isError, setIsError] = useState<boolean>(false);
@@ -147,6 +160,7 @@ const DashboardAdmin = () => {
       }, 1000);
     },
   });
+
   const { state } = useContext(AuthContext);
   const { token } = state;
   const updateQuota = async (quota: number) => {
@@ -200,7 +214,8 @@ const DashboardAdmin = () => {
         setFilteredCalendar({
           id: filteredCalendars[0].id,
           date: filteredCalendars[0].date,
-          Quota: filteredCalendars[0].Quota,
+          office: filteredCalendars[0].office,
+          quota: filteredCalendars[0].Quota,
         });
       }
     }
@@ -228,8 +243,8 @@ const DashboardAdmin = () => {
       </div>
       {isSucces && (
         <div className="my-2">
-          <Alert title="Success :(" color="blue">
-            Your update succesfully...
+          <Alert title="Success!" color="blue">
+            Your update Quota succesfully...
           </Alert>
         </div>
       )}

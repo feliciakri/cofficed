@@ -8,21 +8,9 @@ import {
 } from "@mantine/core";
 import moment from "moment";
 import axios, { AxiosResponse, AxiosError } from "axios";
-import {
-  MapPin,
-  Check,
-  Users,
-  CalendarBlank,
-  Syringe,
-  Bag,
-} from "phosphor-react";
+import { MapPin, Check, Users, CalendarBlank, Bag } from "phosphor-react";
 import React, { useContext, useEffect, useState } from "react";
-import {
-  QueryClient,
-  useMutation,
-  useQuery,
-  useQueryClient,
-} from "react-query";
+import { useMutation, useQuery, useQueryClient } from "react-query";
 import { AuthContext } from "../../../context/AuthContext";
 import DateComponent from "../../../components/Calendar";
 import { changeToDate } from "../../../utils/formatDateMoment";
@@ -182,7 +170,7 @@ const ModalRequest: React.FC<ModalProps> = ({ opened, setOpened, days }) => {
   };
   const date = days && moment(days.date).format("LL");
   if (isLoading) {
-    console.log(isLoading);
+    <LoadingOverlay visible={true} />;
   }
 
   return (
