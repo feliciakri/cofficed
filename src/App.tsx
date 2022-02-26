@@ -2,6 +2,8 @@ import Router from "./router";
 import { MantineProvider } from "@mantine/core";
 import { QueryClient, QueryClientProvider } from "react-query";
 import { AuthContextProvider } from "./context/AuthContext";
+import "react-date-range/dist/styles.css";
+import "react-date-range/dist/theme/default.css";
 const queryClient = new QueryClient();
 
 function App() {
