@@ -33,16 +33,16 @@ const fetchCategory = async () => {
 
 const getCalendar = async (category: LocationState | undefined) => {
   if (category) {
-    const data = await axios
-      .get(`${process.env.REACT_APP_API_KEY}/days/`, {
+    const { data: response } = await axios.get(
+      `${process.env.REACT_APP_API_KEY}/days/`,
+      {
         params: {
-          office: category.name,
-          time: "",
+          office_id: category.id,
         },
-      })
-      .then((data) => data)
-      .catch((err) => err);
-    return data.data.data;
+      }
+    );
+
+    return response.data;
   }
 };
 
@@ -115,7 +115,7 @@ const ModalUpdateQuota = ({
                 </div>
               </div>
               <div className="py-4 flex justify-end gap-x-4">
-                <Button variant="outline">Kembali</Button>
+                <Button variant="outline">Back</Button>
                 <Button onClick={() => updateQuota(isQuota)}>
                   Update Qouta
                 </Button>
@@ -250,6 +250,13 @@ const DashboardAdmin = () => {
         <div className="my-2">
           <Alert title="Success!" color="blue">
             Your update Quota succesfully...
+          </Alert>
+        </div>
+      )}
+      {isError && (
+        <div className="my-2">
+          <Alert title="Failed!" color="red">
+            Your update Quota Failed...
           </Alert>
         </div>
       )}
