@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState, ChangeEvent } from "react";
+import { useContext, useEffect, useState, ChangeEvent } from "react";
 import {
   Menu,
   Divider,
@@ -33,6 +33,9 @@ type AttendsProps = {
   admin: string;
   status: string;
   day: string;
+  nik: string;
+  user_avatar: string;
+  user_email: string;
 };
 type PropsTable = {
   attends: AttendsProps;
@@ -68,7 +71,7 @@ const ModalRequest = ({
 }: ModalRequstProps) => {
   const [valueStatus, setValueStatus] = useState<string | string[]>("approved");
   const [isDescription, setIsDescription] = useState<string>();
-  const { id, office, employee } = attends;
+  const { id, office, employee, nik } = attends;
 
   const handleRequest = async () => {
     const approved = {
@@ -97,7 +100,7 @@ const ModalRequest = ({
       <>
         <div className="flex flex-row justify-between bg-blue-100 px-4 text-sm">
           <div className="w-1/2 flex flex-col py-4">
-            <h1>Lokasi WFO</h1>
+            <h1>Location WFO</h1>
             <p className="font-semibold">{office}</p>
           </div>
           <div className="w-1/2 flex flex-col py-4">
@@ -114,8 +117,7 @@ const ModalRequest = ({
             </div>
             <div className="w-1/2 flex flex-col">
               <h1>NIK</h1>
-              {/* from response data backend does not have NIK  */}
-              <p className="font-semibold">320321465</p>
+              <p className="font-semibold">{nik}</p>
             </div>
           </div>
           <div className="flex justify-center my-4">
@@ -158,7 +160,8 @@ const TableAdmin = ({ attends }: PropsTable) => {
   const { state } = useContext(AuthContext);
   const { token } = state;
   const [isOpen, setIsOpen] = useState<boolean>(false);
-  const { id, office, employee, status, day } = attends;
+  const { id, office, employee, status, day, user_avatar, user_email } =
+    attends;
   const dateFormat = moment(day).format("LL");
   const timeFormat = moment(day).format("hh:mm");
   // style by status
@@ -168,7 +171,6 @@ const TableAdmin = ({ attends }: PropsTable) => {
   const mutation = useMutation(postStatusAttends, {
     onSuccess: async (data) => {
       queryClient.invalidateQueries(["allAttendence", data.id]);
-
       setIsOpen(false);
     },
     onError: async () => {
@@ -179,7 +181,6 @@ const TableAdmin = ({ attends }: PropsTable) => {
     const approved = {
       id: id,
       token: token,
-      notes: "",
       status: e,
     };
     await mutation.mutate(approved);
@@ -199,7 +200,17 @@ const TableAdmin = ({ attends }: PropsTable) => {
           <p className="text-sm text-gray-900">{dateFormat}</p>
           <p className="text-sm text-gray-500">{timeFormat}</p>
         </td>
-        <td className="capitalize">{employee}</td>
+        <td className="capitalize flex flex-row space-x-2 items-center">
+          <img
+            src={`${user_avatar ? user_avatar : "/apple-touch-icon.png"}`}
+            alt="logo"
+            className="w-10 h-10"
+          />
+          <div className="flex flex-col">
+            <p>{employee}</p>
+            <p>{user_email}</p>
+          </div>
+        </td>
         <td className="font-semibold">{office}</td>
         <td>
           <span
@@ -237,19 +248,15 @@ const TableAdmin = ({ attends }: PropsTable) => {
 type AttendProps = {
   token: string | null;
   status: string | undefined;
-  order: string | null;
+  order: string;
 };
 const getAllAttends = async (attend: AttendProps) => {
   if (attend.token) {
-    console.log(attend.order);
     const data = await axios.get(
       `${process.env.REACT_APP_API_KEY}/attendances/`,
       {
         params: {
           status: attend.status || "",
-          employee: "",
-          time: "",
-          office: "",
           order: attend.order || "",
         },
         headers: {
@@ -333,7 +340,7 @@ const DashboardAdminRequest = () => {
               placeholder="Filter By Status"
               onChange={handleChange}
               data={[
-                { value: "", label: "all" },
+                { value: "", label: "All" },
                 { value: "approved", label: "Approved" },
                 { value: "rejected", label: "Rejected" },
                 { value: "pending", label: "Pending" },
