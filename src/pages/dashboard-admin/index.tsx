@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from "react";
+import { ChangeEvent, useContext, useEffect, useState } from "react";
 import axios from "axios";
 import { useMediaQuery } from "@mantine/hooks";
 import { useMutation, useQuery, useQueryClient } from "react-query";
@@ -45,6 +45,7 @@ const getCalendar = async (category: LocationState | undefined) => {
     return data.data.data;
   }
 };
+
 const putQuota = async (dayUpdate: PutQuota) => {
   const { token, id, quota } = dayUpdate;
   const response = await axios.post(
@@ -106,7 +107,11 @@ const ModalUpdateQuota = ({
               <div className="my-3 flex flex-col gap-y-2">
                 <h1>Quota WFO</h1>
                 <div className="w-1/4">
-                  <Input onChange={(e: any) => setIsQuota(e.target.value)} />
+                  <Input
+                    onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                      setIsQuota(+e.target.value)
+                    }
+                  />
                 </div>
               </div>
               <div className="py-4 flex justify-end gap-x-4">
