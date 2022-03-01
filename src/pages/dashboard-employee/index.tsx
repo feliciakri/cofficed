@@ -1,8 +1,9 @@
-import { Button, Group, LoadingOverlay } from "@mantine/core";
+import { Alert, Button, Group, Input, LoadingOverlay } from "@mantine/core";
 import axios from "axios";
+import moment from "moment";
 import { Bus, Syringe } from "phosphor-react";
 import { useContext, useState } from "react";
-import { useQuery } from "react-query";
+import { useMutation, useQuery } from "react-query";
 import { AuthContext } from "../../context/AuthContext";
 
 const fetchProfile = async (token: string | null) => {
@@ -25,6 +26,55 @@ const fetchCheckIn = async (token: string | null) => {
     const data = await axios.get(
       `${process.env.REACT_APP_API_KEY}/check/user`,
       {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    return data.data.data;
+  }
+};
+
+const postCheckIn = async ({ token, attendance_id, temprature }: any) => {
+  if (token) {
+    const { data: response } = await axios.post(
+      `${process.env.REACT_APP_API_KEY}/check/ins`,
+      {
+        attendance_id: attendance_id,
+        temprature: +temprature,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return response.data;
+  }
+};
+
+type AttendanceNow = {
+  token: string | null;
+  office: string;
+  date: string;
+  employee: string;
+};
+const fetchAttendanceNow = async ({
+  token,
+  office,
+  date,
+  employee,
+}: AttendanceNow) => {
+  if (token) {
+    const data = await axios.get(
+      `${process.env.REACT_APP_API_KEY}/attendances/`,
+      {
+        params: {
+          office: office,
+          date: date,
+          employee: employee,
+        },
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -90,20 +140,54 @@ const DashboardEmployee = () => {
   const { state } = useContext(AuthContext);
   const { token } = state;
   const [isCheckIn, setIsCheckIn] = useState<boolean>(false);
+  const [isSucces, setIsSucces] = useState<boolean>(false);
+  const [isFailed, setIsFailed] = useState<boolean>(false);
+  const [isTemprature, setIsTemprature] = useState<number>();
+  const dateNow = Date.now();
+  const date = moment(dateNow).format("YYYY-MM-DD");
   const { isLoading, data } = useQuery("getProfile", () => fetchProfile(token));
   const { data: dataCheckIn } = useQuery("getCheckIn", () =>
     fetchCheckIn(token)
   );
+  const { name, office_name } = data;
 
-  const handleCheckIn = () => {
-    // Send check in to backend
-    setIsCheckIn(true);
+  const { data: dataAttendance } = useQuery("getAttendanceNow", () =>
+    fetchAttendanceNow({
+      token: token,
+      employee: name,
+      office: office_name,
+      date: date,
+    })
+  );
+  console.log(dataAttendance);
+  const mutation = useMutation(postCheckIn, {
+    onSuccess: async () => {
+      setIsSucces(true);
+      setTimeout(() => {
+        setIsSucces(false);
+      }, 2000);
+    },
+    onError: async () => {
+      setIsFailed(true);
+      setTimeout(() => {
+        setIsFailed(false);
+      }, 2000);
+    },
+  });
+  const attendanceId = dataAttendance && dataAttendance[0].id;
+
+  const handleCheckIn = async () => {
+    await mutation.mutate({
+      token: token,
+      attendance_id: attendanceId,
+      temprature: isTemprature,
+    });
   };
 
   if (isLoading) {
     <LoadingOverlay visible={isLoading} />;
   }
-  const { name } = data;
+
   return (
     <div>
       <h1 className="text-3xl font-fraunces">Hello {name},</h1>
@@ -128,10 +212,30 @@ const DashboardEmployee = () => {
         />
       </div>
       <div className="my-2">
-        {!isCheckIn ? (
+        {isSucces && (
+          <Alert title="Checked in!" color="blue">
+            Have a cup of coffee and enjoy your day
+          </Alert>
+        )}
+        {isFailed && (
+          <Alert title="Failed!" color="red">
+            You have been check in today!
+          </Alert>
+        )}
+        {attendanceId && (
           <>
             <h1 className="text-3xl font-fraunces">Enjoy your WFH today!</h1>
-            <div className="my-4">
+            <div className="my-4 flex flex-row gap-x-2 items-end">
+              <div className="w-1/6">
+                <label>Temprature</label>
+                <Input
+                  type="number"
+                  placeholder="Temprature"
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                    setIsTemprature(+e.target.value)
+                  }
+                />
+              </div>
               <Button
                 style={{ backgroundColor: "#A5D8FF" }}
                 rightIcon={<Syringe size={20} className="text-red-500" />}
@@ -139,13 +243,6 @@ const DashboardEmployee = () => {
               >
                 Check In
               </Button>
-            </div>
-          </>
-        ) : (
-          <>
-            <h1 className="text-3xl font-fraunces">Checked in!</h1>
-            <div className="my-4">
-              <p>Have a cup of coffee and enjoy your day!</p>
             </div>
           </>
         )}
