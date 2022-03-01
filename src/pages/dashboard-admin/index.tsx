@@ -267,6 +267,7 @@ const DashboardAdmin = () => {
           isMobile={isMobile}
           isTablet={isTablet}
           isDesktop={isDekstop}
+          isQuota={true}
         />
       </div>
     </div>
