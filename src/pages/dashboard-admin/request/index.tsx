@@ -10,8 +10,8 @@ import {
   Select,
   LoadingOverlay,
   Loader,
-  Chips,
-  Chip,
+  RadioGroup,
+  Radio,
 } from "@mantine/core";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import { DateRangePicker } from "@mantine/dates";
@@ -24,6 +24,7 @@ import {
   SortAscending,
   SortDescending,
 } from "phosphor-react";
+import { daysToWeeks } from "date-fns";
 
 type AttendsProps = {
   id: string;
@@ -62,6 +63,25 @@ const postStatusAttends = async (approved: any) => {
   return response.data;
 };
 
+type DaysProps = {
+  token: string;
+  office_id: string;
+  date: string;
+};
+const getQuota = async (days: DaysProps) => {
+  if (days.token) {
+    const data = await axios.get(`${process.env.REACT_APP_API_KEY}/days/`, {
+      params: {
+        office_id: days.office_id,
+        date: days.date,
+      },
+      headers: {
+        Authorization: `Bearer ${days.token}`,
+      },
+    });
+    return data;
+  }
+};
 const ModalRequest = ({
   attends,
   mutation,
@@ -69,10 +89,15 @@ const ModalRequest = ({
   isOpen,
   setIsOpen,
 }: ModalRequstProps) => {
-  const [valueStatus, setValueStatus] = useState<string | string[]>("approved");
+  const [valueStatus, setValueStatus] = useState<string>("approved");
   const [isDescription, setIsDescription] = useState<string>();
-  const { id, office, employee, nik } = attends;
-
+  const { id, office, employee, nik, day } = attends;
+  const date = moment(day).format("YYYY-MM-DD");
+  // const {data, isLoading} = useQuery("getQuota", () => getQuota({
+  //   token: token,
+  //   office_id:
+  // }))
+  console.log(attends);
   const handleRequest = async () => {
     const approved = {
       id: id,
@@ -116,17 +141,23 @@ const ModalRequest = ({
             </div>
           </div>
           <div className="flex justify-center my-4">
-            <Chips
-              size="md"
-              spacing="xl"
-              value={valueStatus}
-              onChange={setValueStatus}
-            >
-              <Chip value="approved" radius="xl">
-                Approved
-              </Chip>
-              <Chip value="rejected">Rejected</Chip>
-            </Chips>
+            <div>
+              <RadioGroup
+                value={valueStatus}
+                onChange={setValueStatus}
+                color="dark"
+                className="flex justify-center py-3"
+                required
+              >
+                <Radio value="approved" className="border p-2">
+                  Approved
+                </Radio>
+
+                <Radio value="rejected" className="border p-2">
+                  Rejected
+                </Radio>
+              </RadioGroup>
+            </div>
           </div>
           <div className="flex flex-col justify-between gap-y-1 text-sm my-3">
             <label className="font-semibold">Description</label>
@@ -159,6 +190,7 @@ const TableAdmin = ({ attends }: PropsTable) => {
     attends;
   const dateFormat = moment(day).format("LL");
   const timeFormat = moment(day).format("hh:mm");
+
   // style by status
   const styleApproved = status.toLocaleLowerCase() === "approved";
   const styleRejected = status.toLocaleLowerCase() === "rejected";
