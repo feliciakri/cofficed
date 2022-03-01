@@ -2,6 +2,7 @@ import { useContext } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Layout from "../components/Layout";
 import { AuthContext } from "../context/AuthContext";
+import DashboardAdminVaccine from "../pages/dahsboard-admin/vaccine";
 import DashboardEmployee from "../pages/dashboard-employee";
 import DashboardEmployeeSchedule from "../pages/dashboard-employee/schedule";
 import Login from "../pages/login";
@@ -24,6 +25,12 @@ const Router = () => {
                 element={<DashboardEmployeeSchedule />}
               />
             </>
+          )}
+          {isLogged && isAdmin && (
+            <Route
+              path="/dashboard-admin/vaccine"
+              element={<DashboardAdminVaccine />}
+            />
           )}
         </Route>
       </Routes>
