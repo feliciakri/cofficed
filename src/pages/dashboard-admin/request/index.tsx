@@ -103,11 +103,6 @@ const ModalRequest = ({
             <h1>Location WFO</h1>
             <p className="font-semibold">{office}</p>
           </div>
-          <div className="w-1/2 flex flex-col py-4">
-            {/* from response data backend does not have quota  */}
-            <h1>Quota tersisa</h1>
-            <p className="font-semibold">3</p>
-          </div>
         </div>
         <div className="m-4">
           <div className=" p-2 border rounded-md flex flex-row justify-between text-sm">
@@ -171,6 +166,7 @@ const TableAdmin = ({ attends }: PropsTable) => {
   const mutation = useMutation(postStatusAttends, {
     onSuccess: async (data) => {
       queryClient.invalidateQueries(["allAttendence", data.id]);
+      queryClient.invalidateQueries(["attendenceByRange", data.id]);
       setIsOpen(false);
     },
     onError: async () => {
@@ -230,14 +226,14 @@ const TableAdmin = ({ attends }: PropsTable) => {
         <td>
           <Menu control={<List size={20} />}>
             <Menu.Item onClick={() => handleStatus("approved")}>
-              Setujui permintaan
+              Approved
             </Menu.Item>
             <Divider />
             <Menu.Item onClick={() => handleStatus("rejected")}>
-              Tolak Permintaan
+              Rejected
             </Menu.Item>
             <Divider />
-            <Menu.Item onClick={() => setIsOpen(true)}>Lihat detail</Menu.Item>
+            <Menu.Item onClick={() => setIsOpen(true)}>Details</Menu.Item>
           </Menu>
         </td>
       </tr>
@@ -249,6 +245,8 @@ type AttendProps = {
   token: string | null;
   status: string | undefined;
   order: string;
+  date?: [Date | null, Date | null];
+  office?: string;
 };
 const getAllAttends = async (attend: AttendProps) => {
   if (attend.token) {
@@ -258,6 +256,30 @@ const getAllAttends = async (attend: AttendProps) => {
         params: {
           status: attend.status || "",
           order: attend.order || "",
+          office: attend.office,
+        },
+        headers: {
+          Authorization: `Bearer ${attend.token}`,
+        },
+      }
+    );
+    return data;
+  }
+};
+const getAttendsByRange = async (attend: AttendProps) => {
+  if (attend.token && attend.date) {
+    const date_start = moment(attend.date[0]).format("YYYY-MM-DD");
+    const date_end = moment(attend.date[1]).format("YYYY-MM-DD");
+    console.log(attend.office);
+    const data = await axios.get(
+      `${process.env.REACT_APP_API_KEY}/attendances/rangedate`,
+      {
+        params: {
+          date_start: date_start,
+          date_end: date_end,
+          status: attend.status || "",
+          order: attend.order || "",
+          office: attend.office,
         },
         headers: {
           Authorization: `Bearer ${attend.token}`,
@@ -275,6 +297,9 @@ const DashboardAdminRequest = () => {
   const [totalPage, setTotalPage] = useState<number>(1);
   const tablePerPage = 6;
   const [isEmployee, setIsEmployee] = useState<AttendsProps[]>();
+  // range date, whether to use?
+  const [isRange, setIsRange] = useState<[Date | null, Date | null]>();
+
   const [filteredByStatus, setFilteredByStatus] = useState<
     string | undefined
   >();
@@ -285,14 +310,46 @@ const DashboardAdminRequest = () => {
     () =>
       getAllAttends({
         token: token,
-        status: filteredByStatus,
+        status:
+          filteredByStatus === "head_office" || filteredByStatus === "storage"
+            ? ""
+            : filteredByStatus,
         order: filteredByOrder ? "asc" : "desc",
+        office:
+          filteredByStatus === "head_office"
+            ? "head office"
+            : filteredByStatus === "storage"
+            ? "storage"
+            : "",
+      })
+  );
+
+  const { data: attendecesRange, refetch: refetchRange } = useQuery(
+    "attendenceByRange",
+    () =>
+      getAttendsByRange({
+        token: token,
+        status:
+          filteredByStatus === "head_office" || filteredByStatus === "storage"
+            ? ""
+            : filteredByStatus,
+        order: filteredByOrder ? "asc" : "desc",
+        date: isRange,
+        office:
+          filteredByStatus === "head_office"
+            ? "head office"
+            : filteredByStatus === "storage"
+            ? "storage"
+            : "",
       })
   );
 
   useEffect(() => {
     if (data) {
       setIsEmployee(data.data.data);
+    }
+    if (attendecesRange) {
+      setIsEmployee(attendecesRange?.data.data);
     }
     if (isEmployee) {
       const num = Math.ceil(isEmployee.length / tablePerPage);
@@ -303,24 +360,37 @@ const DashboardAdminRequest = () => {
       );
       setIsAttendences(dataAttends);
     }
-  }, [data, activePage, isEmployee]);
+  }, [data, activePage, isEmployee, attendecesRange]);
 
   const handleChange = (e: string) => {
     setFilteredByStatus(e);
     setTimeout(() => {
-      refetch();
+      if (attendecesRange) {
+        refetchRange();
+      } else {
+        refetch();
+      }
     }, 300);
   };
 
   const handleFilterBySort = () => {
     setFilteredByOrder(!filteredByOrder);
     setTimeout(() => {
-      refetch();
+      if (attendecesRange) {
+        refetchRange();
+      } else {
+        refetch();
+      }
     }, 300);
   };
-
-  // range date, whether to use?
-  const [isRange, setIsRange] = useState<[Date | null, Date | null]>();
+  const handleRange = (dateRange: [Date | null, Date | null]) => {
+    setIsRange(dateRange);
+    if (dateRange[1]) {
+      setTimeout(() => {
+        refetchRange();
+      }, 200);
+    }
+  };
 
   return (
     <>
@@ -332,7 +402,7 @@ const DashboardAdminRequest = () => {
               placeholder="Pick dates range"
               value={isRange}
               rightSection={<CalendarBlank size={20} />}
-              onChange={setIsRange}
+              onChange={handleRange}
             />
           </div>
           <div className="flex justify-end py-4 gap-x-2">
@@ -344,6 +414,8 @@ const DashboardAdminRequest = () => {
                 { value: "approved", label: "Approved" },
                 { value: "rejected", label: "Rejected" },
                 { value: "pending", label: "Pending" },
+                { value: "head_office", label: "Head Office" },
+                { value: "storage", label: "Storage" },
               ]}
             />
             <div>
