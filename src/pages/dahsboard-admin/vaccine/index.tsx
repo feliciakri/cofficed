@@ -5,7 +5,6 @@ import {
   Radio,
   Table,
   Button,
-  Alert,
 } from "@mantine/core";
 import axios from "axios";
 import { Check, SortAscending, SortDescending, X } from "phosphor-react";
@@ -64,20 +63,11 @@ const ModalCertificate = ({ opened, setOpened, certificate }: ModalProps) => {
   const { state } = useContext(AuthContext);
   const { token } = state;
   const [value, setValue] = useState("approved");
-  const [isSucces, setIsSucces] = useState<boolean>(false);
-  const [isFailed, setIsFailed] = useState<boolean>(false);
+
   const mutation = useMutation(putCertificate, {
     onSuccess: async (data: any) => {
-      setIsSucces(true);
-      setIsFailed(false);
-      setTimeout(() => {
-        setOpened(false);
-        setIsSucces(false);
-      }, 2000);
+      setOpened(false);
       queryClient.invalidateQueries(["getAllCertificate", data.id]);
-    },
-    onError: () => {
-      setIsFailed(true);
     },
   });
   const handleCertificate = async () => {
@@ -102,18 +92,6 @@ const ModalCertificate = ({ opened, setOpened, certificate }: ModalProps) => {
         <h1>Certificate vaccine: {dosage}</h1>
       </div>
       <div className="mx-4 py-2">
-        <div className="py-2">
-          {isSucces && (
-            <Alert title="Succes!" color="blue">
-              Change certificate of success!
-            </Alert>
-          )}
-          {isFailed && (
-            <Alert title="Failed!" color="red">
-              Something wrong...
-            </Alert>
-          )}
-        </div>
         <img
           src={image}
           alt="img vaccine"
