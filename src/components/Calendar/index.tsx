@@ -30,7 +30,7 @@ const DateComponent: React.FC<DateProps> = ({
       isSameDay(parseJSON(day.date), dayToFind)
     );
 
-    return datar?.Quota;
+    return datar?.remaining_quota;
   };
 
   function customDayContent(day: any) {
