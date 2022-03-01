@@ -28,7 +28,6 @@ const postImage = async (data: any) => {
         Authorization: `Bearer ${token}`,
       },
     })
-    .then(() => {})
     .catch((err) => err);
 
   return response.data;
@@ -50,10 +49,10 @@ const ModalVaccine = ({ isOpened, setIsOpened }: ModalVaccineProps) => {
       setIsLoading(true);
     },
     onSuccess: async () => {
-      setIsLoading(false);
       setIsSucces(true);
+      setIsLoading(false);
       setTimeout(() => {
-        setIsFailed(false);
+        setIsSucces(false);
       }, 2000);
     },
     onError: () => {
@@ -144,6 +143,7 @@ const fecthCertificate = async (token: string | null) => {
         },
       }
     );
+
     return response.data;
   }
 };
@@ -157,6 +157,7 @@ const DashboardEmployeeVaccine = () => {
   );
 
   const [active, setActive] = useState<number>(0);
+  console.log(data);
   useEffect(() => {
     if (data) {
       setActive(data.length);
