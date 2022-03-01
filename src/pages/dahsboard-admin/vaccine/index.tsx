@@ -66,7 +66,9 @@ const ModalCertificate = ({ opened, setOpened, certificate }: ModalProps) => {
 
   const mutation = useMutation(putCertificate, {
     onSuccess: async (data: any) => {
-      setOpened(false);
+      setTimeout(() => {
+        setOpened(false);
+      }, 2000);
       queryClient.invalidateQueries(["getAllCertificate", data.id]);
     },
   });
@@ -128,10 +130,15 @@ const TableAdminVaccine: React.FC<Tables> = ({ certificate }) => {
   const { user_avatar, user_email, user_name, certificates } = certificate;
   const isCompletedVaccine =
     certificates.filter((data: CertificateType) => data.status === "approved")
-      .length === 3;
+      .length > 3;
 
   const [opened, setOpened] = useState<boolean>(false);
   const isCertificates = certificates.length > 0;
+  const [isDataCertificate, setIsDataCertificate] = useState<CertificateType>();
+  const handleModal = (data: CertificateType) => {
+    setIsDataCertificate(data);
+    setOpened(true);
+  };
   return (
     <>
       <tr className="bg-white text-gray-900">
@@ -148,13 +155,15 @@ const TableAdminVaccine: React.FC<Tables> = ({ certificate }) => {
         </td>
         <td className="w-1/6">
           <div className="flex items-center relative gap-x-2">
+            {isDataCertificate && (
+              <ModalCertificate
+                opened={opened}
+                setOpened={setOpened}
+                certificate={isDataCertificate}
+              />
+            )}
             {certificates.map((data: CertificateType, i: number) => (
               <div key={i}>
-                <ModalCertificate
-                  opened={opened}
-                  setOpened={setOpened}
-                  certificate={data}
-                />
                 <div
                   className={`${
                     data.status === "pending"
@@ -165,7 +174,7 @@ const TableAdminVaccine: React.FC<Tables> = ({ certificate }) => {
                       ? "bg-red-600"
                       : ""
                   } rounded-full transition duration-500 ease-in-out h-10 w-10 py-3 flex items-center justify-center  cursor-pointer text-white`}
-                  onClick={() => setOpened(true)}
+                  onClick={() => handleModal(data)}
                 >
                   {data.status === "approved" && (
                     <Check size={22} className="text-white" />
