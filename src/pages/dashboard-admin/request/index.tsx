@@ -24,7 +24,6 @@ import {
   SortAscending,
   SortDescending,
 } from "phosphor-react";
-import { daysToWeeks } from "date-fns";
 
 type AttendsProps = {
   id: string;
@@ -37,11 +36,12 @@ type AttendsProps = {
   nik: string;
   user_avatar: string;
   user_email: string;
+  office_id: string;
 };
 type PropsTable = {
   attends: AttendsProps;
 };
-type ModalRequstProps = {
+type ModalRequestProps = {
   attends: AttendsProps;
   mutation?: any;
   token: string | null;
@@ -64,22 +64,25 @@ const postStatusAttends = async (approved: any) => {
 };
 
 type DaysProps = {
-  token: string;
+  token: string | null;
   office_id: string;
   date: string;
 };
 const getQuota = async (days: DaysProps) => {
   if (days.token) {
-    const data = await axios.get(`${process.env.REACT_APP_API_KEY}/days/`, {
-      params: {
-        office_id: days.office_id,
-        date: days.date,
-      },
-      headers: {
-        Authorization: `Bearer ${days.token}`,
-      },
-    });
-    return data;
+    const { data: response } = await axios.get(
+      `${process.env.REACT_APP_API_KEY}/days/`,
+      {
+        params: {
+          office_id: days.office_id,
+          date: days.date,
+        },
+        headers: {
+          Authorization: `Bearer ${days.token}`,
+        },
+      }
+    );
+    return response.data;
   }
 };
 const ModalRequest = ({
@@ -88,16 +91,23 @@ const ModalRequest = ({
   token,
   isOpen,
   setIsOpen,
-}: ModalRequstProps) => {
+}: ModalRequestProps) => {
   const [valueStatus, setValueStatus] = useState<string>("approved");
   const [isDescription, setIsDescription] = useState<string>();
-  const { id, office, employee, nik, day } = attends;
+  const { id, office, employee, nik, day, office_id } = attends;
   const date = moment(day).format("YYYY-MM-DD");
-  // const {data, isLoading} = useQuery("getQuota", () => getQuota({
-  //   token: token,
-  //   office_id:
-  // }))
-  console.log(attends);
+  const { data, refetch } = useQuery("getQuota", () =>
+    getQuota({
+      token: token,
+      office_id: office_id,
+      date: date,
+    })
+  );
+  useEffect(() => {
+    if (isOpen) {
+      refetch();
+    }
+  }, [refetch, isOpen]);
   const handleRequest = async () => {
     const approved = {
       id: id,
@@ -127,6 +137,10 @@ const ModalRequest = ({
           <div className="w-1/2 flex flex-col py-4">
             <h1>Location WFO</h1>
             <p className="font-semibold">{office}</p>
+          </div>
+          <div className="w-1/2 flex flex-col py-4">
+            <h1>Quota</h1>
+            <p className="font-semibold">{data && data[0].remaining_quota}</p>
           </div>
         </div>
         <div className="m-4">
@@ -302,7 +316,7 @@ const getAttendsByRange = async (attend: AttendProps) => {
   if (attend.token && attend.date) {
     const date_start = moment(attend.date[0]).format("YYYY-MM-DD");
     const date_end = moment(attend.date[1]).format("YYYY-MM-DD");
-    console.log(attend.office);
+
     const data = await axios.get(
       `${process.env.REACT_APP_API_KEY}/attendances/rangedate`,
       {
