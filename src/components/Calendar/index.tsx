@@ -8,6 +8,7 @@ type DateProps = {
   isMobile: boolean;
   isDesktop: boolean;
   isTablet: boolean;
+  isQuota: boolean;
 };
 
 const DateComponent: React.FC<DateProps> = ({
@@ -16,6 +17,7 @@ const DateComponent: React.FC<DateProps> = ({
   isDesktop,
   isMobile,
   isTablet,
+  isQuota,
 }) => {
   const [isDays, setIsDays] = useState<any>([]);
 
@@ -30,7 +32,11 @@ const DateComponent: React.FC<DateProps> = ({
       isSameDay(parseJSON(day.date), dayToFind)
     );
 
-    return datar?.remaining_quota;
+    if (isQuota) {
+      return datar?.quota;
+    } else {
+      return datar?.remaining_quota;
+    }
   };
 
   function customDayContent(day: any) {

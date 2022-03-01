@@ -447,6 +447,7 @@ const DashboardEmployeeSchedule = () => {
           isMobile={true}
           isTablet={false}
           isDesktop={false}
+          isQuota={false}
         />
       </div>
       <div className="lg:w-2/5 my-4">
