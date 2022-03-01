@@ -2,10 +2,23 @@ import { Alert, Button, Group, Input, LoadingOverlay } from "@mantine/core";
 import axios from "axios";
 import moment from "moment";
 import { Bus, Syringe } from "phosphor-react";
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { useMutation, useQuery } from "react-query";
 import { AuthContext } from "../../context/AuthContext";
 
+type AttendanceToday = {
+  id: string;
+  day: string;
+  office_id: string;
+  status: string;
+  admin: string;
+  office: string;
+  employee: string;
+  user_avatar: string;
+  user_email: string;
+  notes: string;
+  nik: string;
+};
 const fetchProfile = async (token: string | null) => {
   if (token) {
     const data = await axios.get(
@@ -97,8 +110,7 @@ const CardDashboard: React.FC<CardProps> = ({
   isWFO,
   data,
 }) => {
-  // number check in, pending, and future wfo
-  const numCheckIn = data === null ? 0 : data;
+  const numCheckIn = data === null || data === undefined ? 0 : data.length;
   return (
     <div
       className="py-4 px-5 rounded-lg lg:w-3/4"
@@ -136,10 +148,17 @@ const CardDashboard: React.FC<CardProps> = ({
     </div>
   );
 };
+type CheckInsProps = {
+  attendance_id: string;
+  is_checkins: boolean;
+};
+
 const DashboardEmployee = () => {
   const { state } = useContext(AuthContext);
   const { token } = state;
-  const [isCheckIn, setIsCheckIn] = useState<boolean>(false);
+  const [isAttendance, setIsAttendance] = useState<
+    AttendanceToday | undefined
+  >();
   const [isSucces, setIsSucces] = useState<boolean>(false);
   const [isFailed, setIsFailed] = useState<boolean>(false);
   const [isTemprature, setIsTemprature] = useState<number>();
@@ -159,7 +178,12 @@ const DashboardEmployee = () => {
       date: date,
     })
   );
-  console.log(dataAttendance);
+
+  useEffect(() => {
+    if (dataAttendance) {
+      setIsAttendance(dataAttendance[0]);
+    }
+  }, [dataAttendance]);
   const mutation = useMutation(postCheckIn, {
     onSuccess: async () => {
       setIsSucces(true);
@@ -175,6 +199,13 @@ const DashboardEmployee = () => {
     },
   });
   const attendanceId = dataAttendance && dataAttendance[0].id;
+  const isCheckIn =
+    dataCheckIn &&
+    dataCheckIn.map((data: CheckInsProps) => {
+      if (data.attendance_id === attendanceId) {
+        return data.is_checkins;
+      }
+    });
 
   const handleCheckIn = async () => {
     await mutation.mutate({
@@ -222,7 +253,12 @@ const DashboardEmployee = () => {
             You have been check in today!
           </Alert>
         )}
-        {attendanceId && (
+        {isCheckIn && (
+          <h1 className="text-3xl font-fraunces">
+            You have been check in today!
+          </h1>
+        )}
+        {isAttendance && isAttendance.status === "approved" && !isCheckIn[0] && (
           <>
             <h1 className="text-3xl font-fraunces">Enjoy your WFH today!</h1>
             <div className="my-4 flex flex-row gap-x-2 items-end">
