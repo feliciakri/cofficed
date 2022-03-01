@@ -1,4 +1,4 @@
-import { Syringe, Upload } from "phosphor-react";
+import { Syringe, Upload, X } from "phosphor-react";
 import {
   Stepper,
   Button,
@@ -8,33 +8,12 @@ import {
   Alert,
   LoadingOverlay,
 } from "@mantine/core";
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { Dropzone, MIME_TYPES } from "@mantine/dropzone";
-import { useMutation } from "react-query";
+import { useMutation, useQuery } from "react-query";
 import axios from "axios";
 import { AuthContext } from "../../../context/AuthContext";
 import { SubmitHandler, useForm } from "react-hook-form";
-
-const DUMMY_CERTIFICATE = [
-  {
-    id: "",
-    dosis: "",
-    image: "",
-    status: "verified",
-  },
-  {
-    id: "",
-    dosis: "",
-    image: "",
-    status: "verified",
-  },
-  {
-    id: "",
-    dosis: "",
-    image: "",
-    status: "n",
-  },
-];
 
 type ModalVaccineProps = {
   isOpened: boolean;
@@ -70,7 +49,13 @@ const ModalVaccine = ({ isOpened, setIsOpened }: ModalVaccineProps) => {
     onMutate: () => {
       setIsLoading(true);
     },
-    onSuccess: async (data) => {},
+    onSuccess: async () => {
+      setIsLoading(false);
+      setIsSucces(true);
+      setTimeout(() => {
+        setIsFailed(false);
+      }, 2000);
+    },
     onError: () => {
       setIsLoading(false);
       setIsFailed(true);
@@ -99,6 +84,11 @@ const ModalVaccine = ({ isOpened, setIsOpened }: ModalVaccineProps) => {
       <h1 className="text-center font-fraunces text-lg">
         Upload Certificate Vaccine
       </h1>
+      {isSucces && (
+        <Alert title="Success!" color="Blue">
+          Your certificate has been uploaded
+        </Alert>
+      )}
       {isFailed && (
         <Alert title="Failed :(" color="red">
           Please wait for the previous image verification...
@@ -144,14 +134,37 @@ const ModalVaccine = ({ isOpened, setIsOpened }: ModalVaccineProps) => {
     </Modal>
   );
 };
+const fecthCertificate = async (token: string | null) => {
+  if (token) {
+    const { data: response } = await axios.get(
+      `${process.env.REACT_APP_API_KEY}/certificates/user`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return response.data;
+  }
+};
 const DashboardEmployeeVaccine = () => {
   const [isOpened, setIsOpened] = useState<boolean>(false);
-  const isVerified = DUMMY_CERTIFICATE.filter((certificate) => {
-    return certificate.status === "verified";
-  });
+  const { state } = useContext(AuthContext);
+  const { token } = state;
 
-  const [active, setActive] = useState(isVerified.length);
+  const { data, isLoading } = useQuery("getVaccineUser", () =>
+    fecthCertificate(token)
+  );
 
+  const [active, setActive] = useState<number>(0);
+  useEffect(() => {
+    if (data) {
+      setActive(data.length);
+    }
+  }, [data]);
+  if (isLoading) {
+    <LoadingOverlay visible={isLoading} />;
+  }
   return (
     <div className="mx-6 my-2">
       <ModalVaccine isOpened={isOpened} setIsOpened={setIsOpened} />
@@ -168,29 +181,32 @@ const DashboardEmployeeVaccine = () => {
           breakpoint="sm"
           orientation="vertical"
         >
-          {DUMMY_CERTIFICATE.map((certificate: any, i: number) => (
-            <Stepper.Step
-              label={`Vaccin ${i + 1}`}
-              description={certificate.status}
-              key={i}
-              disabled={certificate.status === "verified"}
-            >
-              <div className="flex flex-row space-x-2 items-center">
-                <p>Certificate {i + 1}</p>
-                <Button
-                  radius="lg"
-                  rightIcon={<Upload size={20} />}
-                  onClick={() => setIsOpened(true)}
-                >
-                  Upload
-                </Button>
-              </div>
-            </Stepper.Step>
-          ))}
-          <Stepper.Completed>
-            Completed, click back button to get to previous step
-          </Stepper.Completed>
+          {data &&
+            data
+              .map((certificate: any, i: number) => (
+                <Stepper.Step
+                  label={`Vaccin ${certificate.dosage}`}
+                  description={certificate.status}
+                  key={i}
+                  disabled={certificate.status === "approved"}
+                  completedIcon={
+                    certificate.status === "rejected" ? <X size={20} /> : ""
+                  }
+                />
+              ))
+              .reverse()}
         </Stepper>
+
+        <div className="my-10">
+          <h1 className="py-2">Upload your certificate</h1>
+          <Button
+            radius="lg"
+            rightIcon={<Upload size={20} />}
+            onClick={() => setIsOpened(true)}
+          >
+            Upload
+          </Button>
+        </div>
       </div>
     </div>
   );
