@@ -31,6 +31,7 @@ const DateComponent: React.FC<DateProps> = ({
     const datar = isDays.find((day: any) =>
       isSameDay(parseJSON(day.date), dayToFind)
     );
+
     if (isQuota) {
       return datar?.quota;
     } else {

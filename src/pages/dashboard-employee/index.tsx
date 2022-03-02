@@ -1,10 +1,58 @@
-import { Button, Group, LoadingOverlay } from "@mantine/core";
+import { Alert, Button, Group, Input, LoadingOverlay } from "@mantine/core";
 import axios from "axios";
+import moment from "moment";
 import { Bus, Syringe, HourglassMedium, SunDim } from "phosphor-react";
 import { useContext, useState } from "react";
-import { useQuery } from "react-query";
+import { useMutation, useQuery, useQueryClient } from "react-query";
 import { AuthContext } from "../../context/AuthContext";
 
+type AttendanceUserDay = {
+	id: string;
+	day: string;
+	office_id: string;
+	status: string;
+	admin: string;
+	office: string;
+	employee: string;
+	user_avatar: string;
+	user_email: string;
+	notes: string;
+	nik: string;
+};
+type CardProps = {
+	isCheckIn: boolean;
+	isPending: boolean;
+	isWFO: boolean;
+	data: any;
+};
+
+type CertificateVaccine = {
+	admin: string;
+	id: string;
+	dosage: number;
+	image: string;
+	user: string;
+	status: string;
+};
+
+type AttendanceUser = {
+	token: string | null;
+	status: string;
+};
+const fecthCertificate = async (token: string | null) => {
+	if (token) {
+		const { data: response } = await axios.get(
+			`${process.env.REACT_APP_API_KEY}/certificates/user`,
+			{
+				headers: {
+					Authorization: `Bearer ${token}`,
+				},
+			}
+		);
+
+		return response.data;
+	}
+};
 const fetchProfile = async (token: string | null) => {
 	if (token) {
 		const data = await axios.get(
@@ -35,20 +83,45 @@ const fetchCheckIn = async (token: string | null) => {
 	}
 };
 
-type CardProps = {
-	isCheckIn: boolean;
-	isPending: boolean;
-	isWFO: boolean;
-	data: any;
+const postCheckIn = async ({ token, attendance_id, temprature }: any) => {
+	if (token) {
+		const { data: response } = await axios.post(
+			`${process.env.REACT_APP_API_KEY}/check/ins`,
+			{
+				attendance_id: attendance_id,
+				temprature: +temprature,
+			},
+			{
+				headers: {
+					Authorization: `Bearer ${token}`,
+				},
+			}
+		);
+		return response.data;
+	}
 };
-const CardDashboard: React.FC<CardProps> = ({
-	isCheckIn,
-	isPending,
-	isWFO,
-	data
-}) => {
-	// number check in, pending, and future wfo
-	const numCheckIn = data === null ? 0 : data;
+
+const fetchAttendanceUser = async (data: AttendanceUser) => {
+	if (data.token) {
+		const { data: response } = await axios.get(
+			`${process.env.REACT_APP_API_KEY}/attendances/user`,
+			{
+				params: {
+					status: data.status,
+				},
+				headers: {
+					Authorization: `Bearer ${data.token}`,
+				},
+			}
+		);
+
+		return response.data;
+	}
+};
+
+const CardDashboard = ({ isCheckIn, isPending, isWFO, data }: CardProps) => {
+	const numCheckIn = data === null || data === undefined ? 0 : data.length;
+
 	return (
 		<div
 			className="py-4 px-5 rounded-lg lg:w-3/4"
@@ -56,14 +129,15 @@ const CardDashboard: React.FC<CardProps> = ({
 		>
 			<Group position="apart">
 				<div className="bg-gray-100 p-7 rounded-full">
-					
-          {isCheckIn
-						? <Bus size={45} />
-						: isPending
-						? <HourglassMedium size={45} />
-						: isWFO
-						? <SunDim size={45} />
-						: ""}
+					{isCheckIn ? (
+						<Bus size={45} />
+					) : isPending ? (
+						<HourglassMedium size={45} />
+					) : isWFO ? (
+						<SunDim size={45} />
+					) : (
+						""
+					)}
 				</div>
 			</Group>
 
@@ -78,7 +152,13 @@ const CardDashboard: React.FC<CardProps> = ({
 						: ""}
 				</h1>
 				<h1 className="text-7xl font-fraunces font-medium">
-					{isCheckIn ? numCheckIn : isPending ? 2 : isWFO ? 1 : ""}
+					{isCheckIn
+						? numCheckIn
+						: isPending
+						? data?.total
+						: isWFO
+						? data?.total
+						: ""}
 				</h1>
 				<h1 className="text-lg ">
 					{isCheckIn
@@ -93,26 +173,105 @@ const CardDashboard: React.FC<CardProps> = ({
 		</div>
 	);
 };
+type CheckInsProps = {
+	attendance_id: string;
+	is_checkins: boolean;
+};
+
 const DashboardEmployee = () => {
 	const { state } = useContext(AuthContext);
 	const { token } = state;
-	const [isCheckIn, setIsCheckIn] = useState<boolean>(false);
+	const queryClient = useQueryClient();
+	const [isSucces, setIsSucces] = useState<boolean>(false);
+	const [isFailed, setIsFailed] = useState<boolean>(false);
+	const [isTemprature, setIsTemprature] = useState<number>();
+	const dateNow = Date.now();
+	const date = moment(dateNow).format("YYYY-MM-DD");
 	const { isLoading, data } = useQuery("getProfile", () =>
 		fetchProfile(token)
 	);
 	const { data: dataCheckIn } = useQuery("getCheckIn", () =>
 		fetchCheckIn(token)
 	);
+	const { name, office_name } = data;
 
-	const handleCheckIn = () => {
-		// Send check in to backend
-		setIsCheckIn(true);
+	const { data: attendaceApprove } = useQuery("getAttendanceApproved", () =>
+		fetchAttendanceUser({
+			token: token,
+			status: "approved",
+		})
+	);
+
+	const { data: attendancePending } = useQuery("getAttendancePending", () =>
+		fetchAttendanceUser({
+			token: token,
+			status: "pending",
+		})
+	);
+
+	const { data: allAttendance } = useQuery("getAttendance", () =>
+		fetchAttendanceUser({
+			token: token,
+			status: "",
+		})
+	);
+
+	const { data: vaccineUser } = useQuery("getVaccineUser", () =>
+		fecthCertificate(token)
+	);
+
+	const mutation = useMutation(postCheckIn, {
+		onSuccess: async () => {
+			queryClient.invalidateQueries("getCheckIn");
+			setIsSucces(true);
+			setTimeout(() => {
+				setIsSucces(false);
+			}, 2000);
+		},
+		onError: async () => {
+			setIsFailed(true);
+			setTimeout(() => {
+				setIsFailed(false);
+			}, 2000);
+		},
+	});
+
+	const isVaccine = vaccineUser
+		?.filter((data: CertificateVaccine) => data.status === "approved")
+		.map((data: CertificateVaccine) => {
+			return data;
+		});
+	const attendanceFilter = attendaceApprove?.current_attendances
+		?.filter(
+			(data: AttendanceUserDay) =>
+				moment(data.day).format("YYYY-MM-DD") === date &&
+				data.office === office_name
+		)
+		.map((data: AttendanceUserDay) => {
+			return data;
+		});
+	const attendanceId =
+		attendanceFilter?.length > 0 ? attendanceFilter[0].id : undefined;
+	const isCheckIn = dataCheckIn
+		?.filter((data: CheckInsProps) => data.attendance_id === attendanceId)
+		.map((data: CheckInsProps) => {
+			return data;
+		});
+	const checkInId = isCheckIn?.length > 0 ? isCheckIn[0] : undefined;
+	const vaccineApproved = isVaccine?.length > 0 ? isVaccine[0] : undefined;
+
+	const handleCheckIn = async () => {
+		await mutation.mutate({
+			token: token,
+			attendance_id: attendanceId,
+			temprature: isTemprature,
+		});
 	};
 
 	if (isLoading) {
 		<LoadingOverlay visible={isLoading} />;
 	}
-	const { name } = data;
+
 	return (
 		<div>
 			<h1 className="text-3xl font-fraunces">Hello {name}, 👋</h1>
@@ -127,35 +286,69 @@ const DashboardEmployee = () => {
 					isCheckIn={false}
 					isPending={true}
 					isWFO={false}
-					data={dataCheckIn}
+					data={attendancePending}
 				/>
 				<CardDashboard
 					isCheckIn={false}
 					isPending={false}
 					isWFO={true}
-					data={dataCheckIn}
+					data={allAttendance}
 				/>
 			</div>
 			<div className="my-2">
-				{!isCheckIn ? (
+				{isSucces && (
+					<Alert title="Checked in!" color="blue">
+						Have a cup of coffee and enjoy your day
+					</Alert>
+				)}
+				{isFailed && (
+					<Alert title="Failed!" color="red">
+						You have been check in today!
+					</Alert>
+				)}
+				{checkInId && vaccineApproved && (
+					<h1 className="text-3xl font-fraunces">
+						You have been checked in today! 🎉
+					</h1>
+				)}
+				{!attendanceId && (
+					<h1 className="text-3xl font-fraunces">
+						You don't have request WFO today!
+					</h1>
+				)}
+				{!vaccineApproved && (
+					<h1 className="text-3xl font-fraunces">
+						You must to upload your certificate Vaccine
+					</h1>
+				)}
+				{attendanceId && vaccineApproved && !checkInId && (
 					<>
 						<h1 className="text-3xl font-fraunces">
 							Enjoy your WFH today!
 						</h1>
-						<div className="my-4">
+						<div className="my-4 flex flex-row gap-x-2 items-end">
+							<div className="w-1/6">
+								<label>Temprature</label>
+								<Input
+									type="number"
+									placeholder="Temprature"
+									onChange={(
+										e: React.ChangeEvent<HTMLInputElement>
+									) => setIsTemprature(+e.target.value)}
+								/>
+							</div>
 							<Button
 								style={{ backgroundColor: "#A5D8FF" }}
+								rightIcon={
+									<Syringe
+										size={20}
+										className="text-red-500"
+									/>
+								}
 								onClick={handleCheckIn}
 							>
-								Check In  🌡️✅
+								Check In 🌡️✅
 							</Button>
-						</div>
-					</>
-				) : (
-					<>
-						<h1 className="text-3xl font-fraunces">Checked in! 🎉</h1>
-						<div className="my-4">
-							<p>Have a cup of coffee and enjoy your day!</p>
 						</div>
 					</>
 				)}

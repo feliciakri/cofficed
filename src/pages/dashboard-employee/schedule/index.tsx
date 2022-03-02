@@ -1,4 +1,6 @@
+import React, { useContext, useEffect, useState } from "react";
 import {
+	Alert,
 	Button,
 	LoadingOverlay,
 	Modal,
@@ -9,18 +11,22 @@ import {
 import moment from "moment";
 import axios, { AxiosResponse, AxiosError } from "axios";
 import { MapPin, Check, Users, CalendarBlank, Bag } from "phosphor-react";
-import React, { useContext, useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import { AuthContext } from "../../../context/AuthContext";
 import DateComponent from "../../../components/Calendar";
 import { changeToDate } from "../../../utils/formatDateMoment";
-
+type AttendancesState = {
+	id: string;
+	office: string;
+	Quota: number;
+	date: string;
+};
 type AttendancesDay = {
+	id?: string | undefined;
+	office?: string | undefined;
+	Quota?: number | undefined;
+	date?: string | undefined;
 	token: string | null;
-	id: string | null;
-	office: string | null;
-	Quota: number | null;
-	date: string | null;
 };
 
 type AttendsProps = {
@@ -31,6 +37,9 @@ type AttendsProps = {
 	admin: string;
 	status: string;
 	day: string;
+	user_avatar: string;
+	user_email: string;
+	nik: string;
 };
 type LocationState = {
 	id: string;
@@ -43,7 +52,7 @@ type ListProps = {
 type ModalProps = {
 	opened: boolean;
 	setOpened: (args: boolean) => void;
-	days: any;
+	days: AttendancesState;
 };
 
 type PostType = {
@@ -60,27 +69,23 @@ const fetchCategory = async () => {
 
 const postDate = async (data: PostType) => {
 	const { token, id } = data;
-	const response = await axios
-		.post(
-			`${process.env.REACT_APP_API_KEY}/attendances/`,
-			{ day: id },
-			{
-				headers: {
-					Authorization: `Bearer ${token}`,
-				},
-			}
-		)
-		.then((res: AxiosResponse) => res.status)
-		.catch((error: AxiosError) => {
-			console.log(error);
-		});
 
-	return response;
+	const { data: response } = await axios.post(
+		`${process.env.REACT_APP_API_KEY}/attendances/`,
+		{ day: id },
+		{
+			headers: {
+				Authorization: `Bearer ${token}`,
+			},
+		}
+	);
+
+	return response.data;
 };
 
 const fetchProfile = async (token: string | null) => {
 	if (token) {
-		const data = await axios.get(
+		const { data: response } = await axios.get(
 			`${process.env.REACT_APP_API_KEY}/users/profile`,
 			{
 				headers: {
@@ -89,7 +94,7 @@ const fetchProfile = async (token: string | null) => {
 			}
 		);
 
-		return data.data.data;
+		return response.data;
 	}
 };
 
@@ -98,13 +103,6 @@ const getAllAttends = async (token: string | null) => {
 		const data = await axios.get(
 			`${process.env.REACT_APP_API_KEY}/attendances/`,
 			{
-				params: {
-					status: "",
-					employee: "",
-					time: "",
-					office: "",
-					order: "",
-				},
 				headers: {
 					Authorization: `Bearer ${token}`,
 				},
@@ -120,51 +118,62 @@ const getAttendsByParams = async (attendecesByDays: AttendancesDay) => {
 
 	if (token && date && office) {
 		const dates = moment(date).format("YYYY-MM-DD");
-		const data = await axios
-			.get(`${process.env.REACT_APP_API_KEY}/attendances/`, {
+
+		const { data: response } = await axios.get(
+			`${process.env.REACT_APP_API_KEY}/attendances/`,
+			{
 				params: {
-					status: "",
-					employee: "",
-					time: dates,
-					office: office,
-					order: "",
+					date: dates,
+					office_id: office,
 				},
 				headers: {
 					Authorization: `Bearer ${token}`,
 				},
-			})
-			.catch((err) => err.response);
+			}
+		);
 
-		return data.data.data;
+		return response.data;
 	}
 };
-const getCalendar = async (category: any) => {
+const getCalendar = async (category: LocationState | undefined) => {
 	if (category) {
-		console.log(category.id);
-		const data = await axios.get(`${process.env.REACT_APP_API_KEY}/days/`, {
-			params: {
-				office: category.name,
-				time: "",
-			},
-		});
-		return data.data.data;
+		const { data: response } = await axios.get(
+			`${process.env.REACT_APP_API_KEY}/days/`,
+			{
+				params: {
+					office_id: category.id,
+				},
+			}
+		);
+		return response.data;
 	}
 };
 
-const ModalRequest: React.FC<ModalProps> = ({ opened, setOpened, days }) => {
+const ModalRequest = ({ opened, setOpened, days }: ModalProps) => {
 	const queryClient = useQueryClient();
 	const { state } = useContext(AuthContext);
 	const { token } = state;
 	const { isLoading, data } = useQuery("getProfile", () =>
 		fetchProfile(token)
 	);
+	const [isSuccess, setIsSuccess] = useState<boolean>(false);
+	const [isError, setIsError] = useState<boolean>(false);
 	const mutation = useMutation(postDate, {
-		onSuccess: async (data: any) => {
-			setOpened(false);
-			queryClient.invalidateQueries(["allAttendence", data.id]);
-			queryClient.invalidateQueries(["attendsByDay", data.id]);
+		onSuccess: () => {
+			setIsSuccess(true);
+			setTimeout(() => {
+				setOpened(false);
+				setIsSuccess(false);
+			}, 2000);
+			queryClient.invalidateQueries("allAttendence");
+			queryClient.invalidateQueries("attendsByDay");
 		},
-		onError: async (error) => {},
+		onError: () => {
+			setIsError(true);
+			setTimeout(() => {
+				setIsError(false);
+			}, 2000);
+		},
 	});
 	const handleRequestAttends = async () => {
 		const data = {
@@ -194,19 +203,35 @@ const ModalRequest: React.FC<ModalProps> = ({ opened, setOpened, days }) => {
 					modal: { padding: 0 },
 				}}
 			>
+				{isLoading && <LoadingOverlay visible={true} />}
+				{isSuccess && (
+					<div className="mx-4 my-2">
+						<Alert title="Success!" color="blue">
+							WFO request successful!
+						</Alert>
+					</div>
+				)}
+				{isError && (
+					<div className="mx-4 my-2">
+						<Alert title="Failed!" color="red">
+							The WFO request has passed or has been registered on
+							the same day!
+						</Alert>
+					</div>
+				)}
 				<div className="bg-blue-100 px-4 w-full flex flex-row justify-between py-4">
 					<div className="w-1/2">
-						<h2 className="text-gray-500 text-sm">Tanggal</h2>
+						<h2 className="text-gray-500 text-sm">Date</h2>
 						<p className="font-bold">{date}</p>
 					</div>
 					<div className="w-1/2">
-						<h2 className="text-gray-500 text-sm">Lokasi</h2>
+						<h2 className="text-gray-500 text-sm">Location</h2>
 						<p className="font-bold">{days && days.office}</p>
 					</div>
 				</div>
 				<div className="px-4 flex flex-row justify-between py-3">
 					<div className="w-1/2">
-						<h2 className="text-gray-500 text-sm">Pemohon</h2>
+						<h2 className="text-gray-500 text-sm">Applicant</h2>
 						<p>{data.name}</p>
 					</div>
 					<div className="w-1/2">
@@ -214,32 +239,33 @@ const ModalRequest: React.FC<ModalProps> = ({ opened, setOpened, days }) => {
 						<p>{data.nik}</p>
 					</div>
 				</div>
-				<div className="px-4 py-3">
-					<div className="flex flex-row items-center bg-blue-200 py-2 px-4 rounded">
-						<Check className="mr-2" size={20} />
-						<p>Vaksinasi Lengkap</p>
-					</div>
-				</div>
+				{/* Is this necessary ? */}
+				{/* <div className="px-4 py-3">
+          <div className="flex flex-row items-center bg-blue-200 py-2 px-4 rounded">
+            <Check className="mr-2" size={20} />
+            <p>Vaksinasi Lengkap</p>
+          </div>
+        </div> */}
 				<div className="px-4 py-4 flex justify-end gap-x-4">
 					<button
 						className="py-2 mx-4 text-gray-500"
 						onClick={() => setOpened(false)}
 					>
-						Kembali
+						Back
 					</button>
 					<button
 						className="flex flex-row items-center bg-gray-700 text-white py-2 px-4 rounded"
 						onClick={handleRequestAttends}
+						disabled={isSuccess}
 					>
-						Kirim permintaan WFO
+						Send Request WFO
 					</button>
 				</div>
 			</Modal>
 		</>
 	);
 };
-const CardListRequest: React.FC<ListProps> = ({ attends }) => {
-	console.log(attends);
+const CardListRequest = ({ attends }: ListProps) => {
 	const { day, office, employee, notes, status } = attends;
 	const date = moment(day).format("LL");
 	const styleApproved = status.toLocaleLowerCase() === "approved";
@@ -286,13 +312,18 @@ const CardListRequest: React.FC<ListProps> = ({ attends }) => {
 		</div>
 	);
 };
-const ListAttendences: React.FC<ListProps> = ({ attends }) => {
+const ListAttendences = ({ attends }: ListProps) => {
+	const { employee, user_email, user_avatar } = attends;
 	return (
 		<div className="flex flex-row border-b-2 gap-x-4 items-center">
-			<img src="/apple-touch-icon.png" alt="logo" className="w-9 h-9" />
+			<img
+				src={`${user_avatar ? user_avatar : "/apple-touch-icon.png"}`}
+				alt="logo"
+				className="w-9 h-9"
+			/>
 			<div className="flex flex-col ">
-				<h1>{attends.employee}</h1>
-				<p>{attends.office}</p>
+				<h1>{employee}</h1>
+				<p>{user_email}</p>
 			</div>
 		</div>
 	);
@@ -301,8 +332,9 @@ const DashboardEmployeeSchedule = () => {
 	const { state } = useContext(AuthContext);
 	const { token } = state;
 	const [isLocation, setIsLocation] = useState<LocationState[]>([]);
-	const [filteredCategory, setFilteredCategory] = useState<any>();
-	const [isDays, setIsDays] = useState<any>();
+	const [filteredCategory, setFilteredCategory] = useState<LocationState>();
+
+	const [isDays, setIsDays] = useState<AttendancesState>();
 	const [opened, setOpened] = useState<boolean>(false);
 	// Pagination
 	const tablePerPage = 3;
@@ -323,7 +355,7 @@ const DashboardEmployeeSchedule = () => {
 		getCalendar(filteredCategory)
 	);
 
-	const attendecesByDays = {
+	const attendecesByDays: AttendancesDay = {
 		token: token,
 		...isDays,
 	};
@@ -375,13 +407,13 @@ const DashboardEmployeeSchedule = () => {
 
 	const handleChangeCalendar = (e: Date) => {
 		if (dataCalendar) {
-			const filteredCalenders = dataCalendar.filter(
-				(calender: any) =>
+			const filteredCalendars = dataCalendar.filter(
+				(calender: AttendancesState) =>
 					changeToDate(calender.date) === changeToDate(e)
 			);
 
-			if (filteredCalenders.length > 0) {
-				setIsDays({ ...filteredCalenders[0] });
+			if (filteredCalendars.length > 0) {
+				setIsDays({ ...filteredCalendars[0] });
 				setTimeout(() => {
 					refetchAttends();
 				}, 400);
@@ -410,12 +442,9 @@ const DashboardEmployeeSchedule = () => {
 				<h1 className="mt-5">Request Log</h1>
 				<div className="flex flex-col justify-between h-screen">
 					<div className="flex flex-col my-2">
-						{isAttendences &&
-							isAttendences?.map(
-								(data: AttendsProps, i: number) => (
-									<CardListRequest attends={data} key={i} />
-								)
-							)}
+						{isAttendences?.map((data: AttendsProps, i: number) => (
+							<CardListRequest attends={data} key={i} />
+						))}
 					</div>
 					<div className="flex my-14 justify-center">
 						<Pagination
@@ -467,15 +496,11 @@ const DashboardEmployeeSchedule = () => {
 							/>
 						)}
 						{!dataAttendensByDay && <p>No one</p>}
-						{dataAttendensByDay &&
-							dataAttendensByDay?.map(
-								(attends: AttendsProps, i: number) => (
-									<ListAttendences
-										attends={attends}
-										key={i}
-									/>
-								)
-							)}
+						{dataAttendensByDay?.map(
+							(attends: AttendsProps, i: number) => (
+								<ListAttendences attends={attends} key={i} />
+							)
+						)}
 					</ScrollArea>
 				</div>
 			</div>
