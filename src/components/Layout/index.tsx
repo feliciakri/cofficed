@@ -163,22 +163,24 @@ const Layout = () => {
 						</Navbar.Section>
 						<Navbar.Section>
 							<hr className="my-2" />
-							<div className="flex flex-row gap-x-2 items-center hover:cursor-pointer">
-								<img
-									src={avatar}
-									alt="logo.png"
-									className="rounded-full w-12 h-12"
-								/>
-								<div className="flex flex-row items-center justify-between w-full">
-									<div className="flex flex-col gap-y-0.5">
-										<h1 className="text-base font-bold">
-											{name}
-										</h1>
-										<p className="text-sm">{email}</p>
+							<NavLink to="/profile/setting">
+								<div className="flex flex-row gap-x-2 items-center hover:cursor-pointer">
+									<img
+										src={avatar}
+										alt="logo.png"
+										className="rounded-full w-12 h-12"
+									/>
+									<div className="flex flex-row items-center justify-between w-full">
+										<div className="flex flex-col gap-y-0.5">
+											<h1 className="text-base font-bold">
+												{name}
+											</h1>
+											<p className="text-sm">{email}</p>
+										</div>
+										<CaretRight size={30} />
 									</div>
-									<CaretRight size={30} />
 								</div>
-							</div>
+							</NavLink>
 						</Navbar.Section>
 					</Navbar>
 				}
