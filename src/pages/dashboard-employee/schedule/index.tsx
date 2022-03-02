@@ -1,3 +1,4 @@
+import React, { useContext, useEffect, useState } from "react";
 import {
   Alert,
   Button,
@@ -9,9 +10,7 @@ import {
 } from "@mantine/core";
 import moment from "moment";
 import axios from "axios";
-
 import { MapPin, Check, Users, CalendarBlank, Bag } from "phosphor-react";
-import React, { useContext, useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import { AuthContext } from "../../../context/AuthContext";
 import DateComponent from "../../../components/Calendar";
@@ -148,7 +147,7 @@ const getCalendar = async (category: LocationState | undefined) => {
   }
 };
 
-const ModalRequest: React.FC<ModalProps> = ({ opened, setOpened, days }) => {
+const ModalRequest = ({ opened, setOpened, days }: ModalProps) => {
   const queryClient = useQueryClient();
   const { state } = useContext(AuthContext);
   const { token } = state;
@@ -254,7 +253,7 @@ const ModalRequest: React.FC<ModalProps> = ({ opened, setOpened, days }) => {
     </>
   );
 };
-const CardListRequest: React.FC<ListProps> = ({ attends }) => {
+const CardListRequest = ({ attends }: ListProps) => {
   const { day, office, employee, notes, status } = attends;
   const date = moment(day).format("LL");
   const styleApproved = status.toLocaleLowerCase() === "approved";
@@ -425,10 +424,9 @@ const DashboardEmployeeSchedule = () => {
         <h1 className="mt-5">Request Log</h1>
         <div className="flex flex-col justify-between h-screen">
           <div className="flex flex-col my-2">
-            {isAttendences &&
-              isAttendences?.map((data: AttendsProps, i: number) => (
-                <CardListRequest attends={data} key={i} />
-              ))}
+            {isAttendences?.map((data: AttendsProps, i: number) => (
+              <CardListRequest attends={data} key={i} />
+            ))}
           </div>
           <div className="flex my-14 justify-center">
             <Pagination
@@ -475,10 +473,9 @@ const DashboardEmployeeSchedule = () => {
               />
             )}
             {!dataAttendensByDay && <p>No one</p>}
-            {dataAttendensByDay &&
-              dataAttendensByDay?.map((attends: AttendsProps, i: number) => (
-                <ListAttendences attends={attends} key={i} />
-              ))}
+            {dataAttendensByDay?.map((attends: AttendsProps, i: number) => (
+              <ListAttendences attends={attends} key={i} />
+            ))}
           </ScrollArea>
         </div>
       </div>

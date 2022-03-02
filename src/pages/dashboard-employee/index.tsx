@@ -19,6 +19,40 @@ type AttendanceUserDay = {
   notes: string;
   nik: string;
 };
+type CardProps = {
+  isCheckIn: boolean;
+  isPending: boolean;
+  isWFO: boolean;
+  data: any;
+};
+
+type CertificateVaccine = {
+  admin: string;
+  id: string;
+  dosage: number;
+  image: string;
+  user: string;
+  status: string;
+};
+
+type AttendanceUser = {
+  token: string | null;
+  status: string;
+};
+const fecthCertificate = async (token: string | null) => {
+  if (token) {
+    const { data: response } = await axios.get(
+      `${process.env.REACT_APP_API_KEY}/certificates/user`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    return response.data;
+  }
+};
 const fetchProfile = async (token: string | null) => {
   if (token) {
     const data = await axios.get(
@@ -67,10 +101,6 @@ const postCheckIn = async ({ token, attendance_id, temprature }: any) => {
   }
 };
 
-type AttendanceUser = {
-  token: string | null;
-  status: string;
-};
 const fetchAttendanceUser = async (data: AttendanceUser) => {
   if (data.token) {
     const { data: response } = await axios.get(
@@ -89,18 +119,7 @@ const fetchAttendanceUser = async (data: AttendanceUser) => {
   }
 };
 
-type CardProps = {
-  isCheckIn: boolean;
-  isPending: boolean;
-  isWFO: boolean;
-  data: any;
-};
-const CardDashboard: React.FC<CardProps> = ({
-  isCheckIn,
-  isPending,
-  isWFO,
-  data,
-}) => {
+const CardDashboard = ({ isCheckIn, isPending, isWFO, data }: CardProps) => {
   const numCheckIn = data === null || data === undefined ? 0 : data.length;
 
   return (
@@ -187,6 +206,10 @@ const DashboardEmployee = () => {
     })
   );
 
+  const { data: vaccineUser } = useQuery("getVaccineUser", () =>
+    fecthCertificate(token)
+  );
+
   const mutation = useMutation(postCheckIn, {
     onSuccess: async () => {
       queryClient.invalidateQueries("getCheckIn");
@@ -203,6 +226,11 @@ const DashboardEmployee = () => {
     },
   });
 
+  const isVaccine = vaccineUser
+    ?.filter((data: CertificateVaccine) => data.status === "approved")
+    .map((data: CertificateVaccine) => {
+      return data;
+    });
   const attendanceFilter = attendaceApprove?.current_attendances
     ?.filter(
       (data: AttendanceUserDay) =>
@@ -212,8 +240,6 @@ const DashboardEmployee = () => {
     .map((data: AttendanceUserDay) => {
       return data;
     });
-
-  console.log(attendanceFilter);
   const attendanceId =
     attendanceFilter?.length > 0 ? attendanceFilter[0].id : undefined;
   const isCheckIn = dataCheckIn
@@ -221,8 +247,8 @@ const DashboardEmployee = () => {
     .map((data: CheckInsProps) => {
       return data;
     });
-  const checkInId =
-    isCheckIn && isCheckIn.length > 0 ? isCheckIn[0] : undefined;
+  const checkInId = isCheckIn?.length > 0 ? isCheckIn[0] : undefined;
+  const vaccineApproved = isVaccine?.length > 0 ? isVaccine[0] : undefined;
 
   const handleCheckIn = async () => {
     await mutation.mutate({
@@ -270,7 +296,7 @@ const DashboardEmployee = () => {
             You have been check in today!
           </Alert>
         )}
-        {checkInId && (
+        {checkInId && vaccineApproved && (
           <h1 className="text-3xl font-fraunces">
             You have been check in today!
           </h1>
@@ -280,7 +306,12 @@ const DashboardEmployee = () => {
             You don't have request WFO today!
           </h1>
         )}
-        {attendanceId && !checkInId && (
+        {!vaccineApproved && (
+          <h1 className="text-3xl font-fraunces">
+            You must to upload your certificate Vaccine
+          </h1>
+        )}
+        {attendanceId && vaccineApproved && !checkInId && (
           <>
             <h1 className="text-3xl font-fraunces">Enjoy your WFH today!</h1>
             <div className="my-4 flex flex-row gap-x-2 items-end">
