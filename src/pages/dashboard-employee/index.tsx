@@ -2,11 +2,11 @@ import { Alert, Button, Group, Input, LoadingOverlay } from "@mantine/core";
 import axios from "axios";
 import moment from "moment";
 import { Bus, Syringe } from "phosphor-react";
-import { useContext, useEffect, useState } from "react";
-import { useMutation, useQuery } from "react-query";
+import { useContext, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "react-query";
 import { AuthContext } from "../../context/AuthContext";
 
-type AttendanceToday = {
+type AttendanceUserDay = {
   id: string;
   day: string;
   office_id: string;
@@ -67,34 +67,25 @@ const postCheckIn = async ({ token, attendance_id, temprature }: any) => {
   }
 };
 
-type AttendanceNow = {
+type AttendanceUser = {
   token: string | null;
-  office: string;
-  date: string;
-  employee: string;
+  status: string;
 };
-const fetchAttendanceNow = async ({
-  token,
-  office,
-  date,
-  employee,
-}: AttendanceNow) => {
-  if (token) {
-    const data = await axios.get(
-      `${process.env.REACT_APP_API_KEY}/attendances/`,
+const fetchAttendanceUser = async (data: AttendanceUser) => {
+  if (data.token) {
+    const { data: response } = await axios.get(
+      `${process.env.REACT_APP_API_KEY}/attendances/user`,
       {
         params: {
-          office: office,
-          date: date,
-          employee: employee,
+          status: data.status,
         },
         headers: {
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${data.token}`,
         },
       }
     );
 
-    return data.data.data;
+    return response.data;
   }
 };
 
@@ -111,6 +102,7 @@ const CardDashboard: React.FC<CardProps> = ({
   data,
 }) => {
   const numCheckIn = data === null || data === undefined ? 0 : data.length;
+
   return (
     <div
       className="py-4 px-5 rounded-lg lg:w-3/4"
@@ -133,7 +125,13 @@ const CardDashboard: React.FC<CardProps> = ({
             : ""}
         </h1>
         <h1 className="text-7xl font-fraunces font-medium">
-          {isCheckIn ? numCheckIn : isPending ? 2 : isWFO ? 1 : ""}
+          {isCheckIn
+            ? numCheckIn
+            : isPending
+            ? data?.total
+            : isWFO
+            ? data?.total
+            : ""}
         </h1>
         <h1 className="text-lg ">
           {isCheckIn
@@ -156,9 +154,7 @@ type CheckInsProps = {
 const DashboardEmployee = () => {
   const { state } = useContext(AuthContext);
   const { token } = state;
-  const [isAttendance, setIsAttendance] = useState<
-    AttendanceToday | undefined
-  >();
+  const queryClient = useQueryClient();
   const [isSucces, setIsSucces] = useState<boolean>(false);
   const [isFailed, setIsFailed] = useState<boolean>(false);
   const [isTemprature, setIsTemprature] = useState<number>();
@@ -170,22 +166,30 @@ const DashboardEmployee = () => {
   );
   const { name, office_name } = data;
 
-  const { data: dataAttendance } = useQuery("getAttendanceNow", () =>
-    fetchAttendanceNow({
+  const { data: attendaceApprove } = useQuery("getAttendanceApproved", () =>
+    fetchAttendanceUser({
       token: token,
-      employee: name,
-      office: office_name,
-      date: date,
+      status: "approved",
     })
   );
 
-  useEffect(() => {
-    if (dataAttendance) {
-      setIsAttendance(dataAttendance[0]);
-    }
-  }, [dataAttendance]);
+  const { data: attendancePending } = useQuery("getAttendancePending", () =>
+    fetchAttendanceUser({
+      token: token,
+      status: "pending",
+    })
+  );
+
+  const { data: allAttendance } = useQuery("getAttendance", () =>
+    fetchAttendanceUser({
+      token: token,
+      status: "",
+    })
+  );
+
   const mutation = useMutation(postCheckIn, {
     onSuccess: async () => {
+      queryClient.invalidateQueries("getCheckIn");
       setIsSucces(true);
       setTimeout(() => {
         setIsSucces(false);
@@ -198,14 +202,27 @@ const DashboardEmployee = () => {
       }, 2000);
     },
   });
-  const attendanceId = dataAttendance && dataAttendance[0].id;
-  const isCheckIn =
-    dataCheckIn &&
-    dataCheckIn.map((data: CheckInsProps) => {
-      if (data.attendance_id === attendanceId) {
-        return data.is_checkins;
-      }
+
+  const attendanceFilter = attendaceApprove?.current_attendances
+    ?.filter(
+      (data: AttendanceUserDay) =>
+        moment(data.day).format("YYYY-MM-DD") === date &&
+        data.office === office_name
+    )
+    .map((data: AttendanceUserDay) => {
+      return data;
     });
+
+  console.log(attendanceFilter);
+  const attendanceId =
+    attendanceFilter?.length > 0 ? attendanceFilter[0].id : undefined;
+  const isCheckIn = dataCheckIn
+    ?.filter((data: CheckInsProps) => data.attendance_id === attendanceId)
+    .map((data: CheckInsProps) => {
+      return data;
+    });
+  const checkInId =
+    isCheckIn && isCheckIn.length > 0 ? isCheckIn[0] : undefined;
 
   const handleCheckIn = async () => {
     await mutation.mutate({
@@ -233,13 +250,13 @@ const DashboardEmployee = () => {
           isCheckIn={false}
           isPending={true}
           isWFO={false}
-          data={dataCheckIn}
+          data={attendancePending}
         />
         <CardDashboard
           isCheckIn={false}
           isPending={false}
           isWFO={true}
-          data={dataCheckIn}
+          data={allAttendance}
         />
       </div>
       <div className="my-2">
@@ -253,12 +270,17 @@ const DashboardEmployee = () => {
             You have been check in today!
           </Alert>
         )}
-        {isCheckIn && (
+        {checkInId && (
           <h1 className="text-3xl font-fraunces">
             You have been check in today!
           </h1>
         )}
-        {isAttendance && isAttendance.status === "approved" && !isCheckIn[0] && (
+        {!attendanceId && (
+          <h1 className="text-3xl font-fraunces">
+            You don't have request WFO today!
+          </h1>
+        )}
+        {attendanceId && !checkInId && (
           <>
             <h1 className="text-3xl font-fraunces">Enjoy your WFH today!</h1>
             <div className="my-4 flex flex-row gap-x-2 items-end">
