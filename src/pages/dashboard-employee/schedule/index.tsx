@@ -242,6 +242,7 @@ const ModalRequest: React.FC<ModalProps> = ({ opened, setOpened, days }) => {
   );
 };
 const CardListRequest: React.FC<ListProps> = ({ attends }) => {
+  console.log(attends);
   const { day, office, employee, notes, status } = attends;
   const date = moment(day).format("LL");
   const styleApproved = status.toLocaleLowerCase() === "approved";
