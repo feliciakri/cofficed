@@ -8,21 +8,9 @@ import {
 } from "@mantine/core";
 import moment from "moment";
 import axios, { AxiosResponse, AxiosError } from "axios";
-import {
-  MapPin,
-  Check,
-  Users,
-  CalendarBlank,
-  Syringe,
-  Bag,
-} from "phosphor-react";
+import { MapPin, Check, Users, CalendarBlank, Bag } from "phosphor-react";
 import React, { useContext, useEffect, useState } from "react";
-import {
-  QueryClient,
-  useMutation,
-  useQuery,
-  useQueryClient,
-} from "react-query";
+import { useMutation, useQuery, useQueryClient } from "react-query";
 import { AuthContext } from "../../../context/AuthContext";
 import DateComponent from "../../../components/Calendar";
 import { changeToDate } from "../../../utils/formatDateMoment";
@@ -150,6 +138,7 @@ const getAttendsByParams = async (attendecesByDays: AttendancesDay) => {
 };
 const getCalendar = async (category: any) => {
   if (category) {
+    console.log(category.id);
     const data = await axios.get(`${process.env.REACT_APP_API_KEY}/days/`, {
       params: {
         office: category.name,
@@ -182,7 +171,7 @@ const ModalRequest: React.FC<ModalProps> = ({ opened, setOpened, days }) => {
   };
   const date = days && moment(days.date).format("LL");
   if (isLoading) {
-    console.log(isLoading);
+    <LoadingOverlay visible={true} />;
   }
 
   return (
@@ -242,6 +231,7 @@ const ModalRequest: React.FC<ModalProps> = ({ opened, setOpened, days }) => {
   );
 };
 const CardListRequest: React.FC<ListProps> = ({ attends }) => {
+  console.log(attends);
   const { day, office, employee, notes, status } = attends;
   const date = moment(day).format("LL");
   const styleApproved = status.toLocaleLowerCase() === "approved";
@@ -428,6 +418,7 @@ const DashboardEmployeeSchedule = () => {
           isMobile={true}
           isTablet={false}
           isDesktop={false}
+          isQuota={false}
         />
       </div>
       <div className="lg:w-2/5 my-4">
