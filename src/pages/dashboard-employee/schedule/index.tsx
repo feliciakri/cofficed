@@ -243,6 +243,7 @@ const ModalRequest: React.FC<ModalProps> = ({ opened, setOpened, days }) => {
   );
 };
 const CardListRequest: React.FC<ListProps> = ({ attends }) => {
+  console.log(attends);
   const { day, office, employee, notes, status } = attends;
   const date = moment(day).format("LL");
   const styleApproved = status.toLocaleLowerCase() === "approved";
@@ -417,7 +418,7 @@ const DashboardEmployeeSchedule = () => {
               onChange={setPage}
               total={totalPage}
               color="cyan"
-              boundaries={4}
+              boundaries={1}
             />
           </div>
         </div>
@@ -435,12 +436,11 @@ const DashboardEmployeeSchedule = () => {
         <div className="flex items-center justify-center">
           <Button
             color="green"
-            rightIcon={<Bag size={20} className={isDays && "text-white"} />}
             onClick={() => isDays && setOpened(true)}
             className="my-4 mx-2"
             disabled={!isDays}
           >
-            <p className="text-lg py-4"> Request WFO</p>
+            <p className="text-lg py-4"> Request WFO 📝 🏢 💼</p>
           </Button>
         </div>
         <div className="flex flex-col gap-y-2 rounded h-screen overflow-auto">
