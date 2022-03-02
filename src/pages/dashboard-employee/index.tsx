@@ -1,7 +1,7 @@
 import { Alert, Button, Group, Input, LoadingOverlay } from "@mantine/core";
 import axios from "axios";
 import moment from "moment";
-import { Bus, Syringe } from "phosphor-react";
+import { Bus, Syringe, HourglassMedium, SunDim } from "phosphor-react";
 import { useContext, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import { AuthContext } from "../../context/AuthContext";
@@ -129,7 +129,15 @@ const CardDashboard = ({ isCheckIn, isPending, isWFO, data }: CardProps) => {
 		>
 			<Group position="apart">
 				<div className="bg-gray-100 p-7 rounded-full">
-					<Bus size={45} />
+					{isCheckIn ? (
+						<Bus size={45} />
+					) : isPending ? (
+						<HourglassMedium size={45} />
+					) : isWFO ? (
+						<SunDim size={45} />
+					) : (
+						""
+					)}
 				</div>
 			</Group>
 
@@ -266,7 +274,7 @@ const DashboardEmployee = () => {
 
 	return (
 		<div>
-			<h1 className="text-3xl font-fraunces">Hello {name},</h1>
+			<h1 className="text-3xl font-fraunces">Hello {name}, 👋</h1>
 			<div className="grid grid-cols-1 lg:grid-cols-3 gap-y-4 my-10">
 				<CardDashboard
 					isCheckIn={true}
@@ -300,7 +308,7 @@ const DashboardEmployee = () => {
 				)}
 				{checkInId && vaccineApproved && (
 					<h1 className="text-3xl font-fraunces">
-						You have been check in today!
+						You have been checked in today! 🎉
 					</h1>
 				)}
 				{!attendanceId && (
@@ -339,7 +347,7 @@ const DashboardEmployee = () => {
 								}
 								onClick={handleCheckIn}
 							>
-								Check In
+								Check In 🌡️✅
 							</Button>
 						</div>
 					</>
