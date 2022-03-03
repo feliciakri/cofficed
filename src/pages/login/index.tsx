@@ -1,6 +1,6 @@
 import { Alert, Button, Input } from "@mantine/core";
 import { SubmitHandler, useForm } from "react-hook-form";
-import { MailIcon, KeyIcon, ExclamationIcon } from "@heroicons/react/solid";
+import { EnvelopeSimple, Key, WarningCircle } from "phosphor-react";
 import { useContext, useState } from "react";
 import { AuthContext } from "../../context/AuthContext";
 import { AuthActionKind } from "../../context/AuthReducer";
@@ -76,7 +76,9 @@ const Login = () => {
 									<Input
 										type="email"
 										placeholder="Your email"
-										icon={<MailIcon className="w-6 h-6" />}
+										icon={
+											<EnvelopeSimple className="w-6 h-6" />
+										}
 										{...register("identity", {
 											required: true,
 										})}
@@ -95,10 +97,10 @@ const Login = () => {
 									<Input
 										type="password"
 										placeholder="Your password"
-										icon={<KeyIcon className="w-6 h-6" />}
+										icon={<Key className="w-6 h-6" />}
 										rightSection={
 											invalidPassword && (
-												<ExclamationIcon className="w-6 h-6 text-red-600" />
+												<WarningCircle className="w-6 h-6 text-red-600" />
 											)
 										}
 										invalid={invalidPassword}
