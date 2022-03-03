@@ -62,7 +62,7 @@ type PostType = {
 
 const fetchCategory = async () => {
 	const { data } = await axios.get(
-		`${process.env.REACT_APP_API_KEY}/offices/`
+		`${process.env.REACT_APP_API_URL}/offices/`
 	);
 	return data.data;
 };
@@ -71,7 +71,7 @@ const postDate = async (data: PostType) => {
 	const { token, id } = data;
 
 	const { data: response } = await axios.post(
-		`${process.env.REACT_APP_API_KEY}/attendances/`,
+		`${process.env.REACT_APP_API_URL}/attendances/`,
 		{ day: id },
 		{
 			headers: {
@@ -86,7 +86,7 @@ const postDate = async (data: PostType) => {
 const fetchProfile = async (token: string | null) => {
 	if (token) {
 		const { data: response } = await axios.get(
-			`${process.env.REACT_APP_API_KEY}/users/profile`,
+			`${process.env.REACT_APP_API_URL}/users/profile`,
 			{
 				headers: {
 					Authorization: `Bearer ${token}`,
@@ -101,7 +101,7 @@ const fetchProfile = async (token: string | null) => {
 const getAllAttends = async (token: string | null) => {
 	if (token) {
 		const data = await axios.get(
-			`${process.env.REACT_APP_API_KEY}/attendances/`,
+			`${process.env.REACT_APP_API_URL}/attendances/`,
 			{
 				headers: {
 					Authorization: `Bearer ${token}`,
@@ -120,7 +120,7 @@ const getAttendsByParams = async (attendecesByDays: AttendancesDay) => {
 		const dates = moment(date).format("YYYY-MM-DD");
 
 		const { data: response } = await axios.get(
-			`${process.env.REACT_APP_API_KEY}/attendances/`,
+			`${process.env.REACT_APP_API_URL}/attendances/`,
 			{
 				params: {
 					date: dates,
@@ -138,7 +138,7 @@ const getAttendsByParams = async (attendecesByDays: AttendancesDay) => {
 const getCalendar = async (category: LocationState | undefined) => {
 	if (category) {
 		const { data: response } = await axios.get(
-			`${process.env.REACT_APP_API_KEY}/days/`,
+			`${process.env.REACT_APP_API_URL}/days/`,
 			{
 				params: {
 					office_id: category.id,
