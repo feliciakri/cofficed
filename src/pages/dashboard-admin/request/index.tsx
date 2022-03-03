@@ -279,11 +279,11 @@ const TableAdmin = ({ attends }: PropsTable) => {
 				<td>
 					<Menu control={<List size={20} />}>
 						<Menu.Item onClick={() => handleStatus("approved")}>
-							Approved
+							Approve
 						</Menu.Item>
 						<Divider />
 						<Menu.Item onClick={() => handleStatus("rejected")}>
-							Rejected
+							Reject
 						</Menu.Item>
 						<Divider />
 						<Menu.Item onClick={() => setIsOpen(true)}>
@@ -506,7 +506,7 @@ const DashboardAdminRequest = () => {
 								<th>Name</th>
 								<th>Location</th>
 								<th>Status</th>
-								<th>Role</th>
+								<th>Actions</th>
 							</tr>
 						</thead>
 						<tbody>
