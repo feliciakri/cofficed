@@ -42,7 +42,7 @@ type AttendanceUser = {
 const fecthCertificate = async (token: string | null) => {
 	if (token) {
 		const { data: response } = await axios.get(
-			`${process.env.REACT_APP_API_KEY}/certificates/user`,
+			`${process.env.REACT_APP_API_URL}/certificates/user`,
 			{
 				headers: {
 					Authorization: `Bearer ${token}`,
@@ -56,7 +56,7 @@ const fecthCertificate = async (token: string | null) => {
 const fetchProfile = async (token: string | null) => {
 	if (token) {
 		const data = await axios.get(
-			`${process.env.REACT_APP_API_KEY}/users/profile`,
+			`${process.env.REACT_APP_API_URL}/users/profile`,
 			{
 				headers: {
 					Authorization: `Bearer ${token}`,
@@ -71,7 +71,7 @@ const fetchProfile = async (token: string | null) => {
 const fetchCheckIn = async (token: string | null) => {
 	if (token) {
 		const data = await axios.get(
-			`${process.env.REACT_APP_API_KEY}/check/user`,
+			`${process.env.REACT_APP_API_URL}/check/user`,
 			{
 				headers: {
 					Authorization: `Bearer ${token}`,
@@ -86,7 +86,7 @@ const fetchCheckIn = async (token: string | null) => {
 const postCheckIn = async ({ token, attendance_id, temprature }: any) => {
 	if (token) {
 		const { data: response } = await axios.post(
-			`${process.env.REACT_APP_API_KEY}/check/ins`,
+			`${process.env.REACT_APP_API_URL}/check/ins`,
 			{
 				attendance_id: attendance_id,
 				temprature: +temprature,
@@ -104,7 +104,7 @@ const postCheckIn = async ({ token, attendance_id, temprature }: any) => {
 const fetchAttendanceUser = async (data: AttendanceUser) => {
 	if (data.token) {
 		const { data: response } = await axios.get(
-			`${process.env.REACT_APP_API_KEY}/attendances/user`,
+			`${process.env.REACT_APP_API_URL}/attendances/user`,
 			{
 				params: {
 					status: data.status,

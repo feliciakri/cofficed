@@ -4,12 +4,13 @@ import Layout from "../components/Layout";
 import { AuthContext } from "../context/AuthContext";
 import DashboardAdmin from "../pages/dashboard-admin";
 import DashboardAdminRequest from "../pages/dashboard-admin/request";
-import DashboardAdminVaccine from "../pages/dahsboard-admin/vaccine";
+import DashboardAdminVaccine from "../pages/dashboard-admin/vaccine";
 import DashboardEmployee from "../pages/dashboard-employee";
 import DashboardEmployeeVaccine from "../pages/dashboard-employee/vaccine";
 import DashboardEmployeeSchedule from "../pages/dashboard-employee/schedule";
 import Login from "../pages/login";
 import ProfileSetting from "../pages/profile/setting";
+import NotFound from "../pages/404";
 
 const Router = () => {
 	const { state } = useContext(AuthContext);
@@ -23,10 +24,7 @@ const Router = () => {
 				<Route path="/" element={<Layout />}>
 					{isLogged && (
 						<>
-							<Route
-								path="/dashboard"
-								element={<DashboardEmployee />}
-							/>
+							<Route path="/" element={<DashboardEmployee />} />
 							<Route
 								path="/dashboard-employee/schedule"
 								element={<DashboardEmployeeSchedule />}
@@ -58,6 +56,7 @@ const Router = () => {
 						</>
 					)}
 				</Route>
+				<Route path="*" element={<NotFound />} />
 			</Routes>
 		</BrowserRouter>
 	);

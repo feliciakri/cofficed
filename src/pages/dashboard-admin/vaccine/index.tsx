@@ -46,7 +46,7 @@ type PutType = {
 const putCertificate = async (data: PutType) => {
 	const { token, status, id } = data;
 	const response = await axios.put(
-		`${process.env.REACT_APP_API_KEY}/certificates/${id}`,
+		`${process.env.REACT_APP_API_URL}/certificates/${id}`,
 		{ status: status },
 		{
 			headers: {
@@ -224,7 +224,7 @@ type AllCertificateProps = {
 const getAllCertificate = async ({ token, order_by }: AllCertificateProps) => {
 	if (token) {
 		const { data: response } = await axios.get(
-			`${process.env.REACT_APP_API_KEY}/certificates/`,
+			`${process.env.REACT_APP_API_URL}/certificates/`,
 			{
 				params: {
 					order_by: order_by,

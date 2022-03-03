@@ -23,7 +23,7 @@ type ModalVaccineProps = {
 const postImage = async (data: any) => {
 	const { token, image } = data;
 	const { data: response } = await axios
-		.post(`${process.env.REACT_APP_API_KEY}/certificates/`, image, {
+		.post(`${process.env.REACT_APP_API_URL}/certificates/`, image, {
 			headers: {
 				"Content-Type": "multipart/form-data",
 				Authorization: `Bearer ${token}`,
@@ -144,7 +144,7 @@ const ModalVaccine = ({ isOpened, setIsOpened }: ModalVaccineProps) => {
 const fecthCertificate = async (token: string | null) => {
 	if (token) {
 		const { data: response } = await axios.get(
-			`${process.env.REACT_APP_API_KEY}/certificates/user`,
+			`${process.env.REACT_APP_API_URL}/certificates/user`,
 			{
 				headers: {
 					Authorization: `Bearer ${token}`,

@@ -21,7 +21,7 @@ import { AuthActionKind } from "../../../context/AuthReducer";
 const fetchProfile = async (token: string | null) => {
 	if (token) {
 		const data = await axios.get(
-			`${process.env.REACT_APP_API_KEY}/users/profile`,
+			`${process.env.REACT_APP_API_URL}/users/profile`,
 			{
 				headers: {
 					Authorization: `Bearer ${token}`,
@@ -36,7 +36,7 @@ const fetchProfile = async (token: string | null) => {
 //change password
 // const changePassword = async (password: string, token: string | null) => {
 // 	console.log(password);
-// 	axios.put(`${process.env.REACT_APP_API_KEY}/users/`, {
+// 	axios.put(`${process.env.REACT_APP_API_URL}/users/`, {
 // 		password: password,
 // 	}, {
 // 		headers: {
@@ -75,7 +75,7 @@ const postAvatar = async (data: any) => {
 	alert(data);
 	const { token, image } = data;
 	const { data: response } = await axios
-		.post(`${process.env.REACT_APP_API_KEY}/users/avatar/`, image, {
+		.post(`${process.env.REACT_APP_API_URL}/users/avatar/`, image, {
 			headers: {
 				"Content-Type": "multipart/form-data",
 				Authorization: `Bearer ${token}`,
@@ -209,7 +209,7 @@ const ModalPassword = ({
 			password: value,
 		};
 		await axios
-			.put(`${process.env.REACT_APP_API_KEY}/users/`, dataInput, {
+			.put(`${process.env.REACT_APP_API_URL}/users/`, dataInput, {
 				headers: {
 					Authorization: `Bearer ${token}`,
 				},

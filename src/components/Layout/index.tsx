@@ -31,7 +31,7 @@ import axios from "axios";
 const fetchProfile = async (token: string | null) => {
 	if (token) {
 		const data = await axios.get(
-			`${process.env.REACT_APP_API_KEY}/users/profile`,
+			`${process.env.REACT_APP_API_URL}/users/profile`,
 			{
 				headers: {
 					Authorization: `Bearer ${token}`,
@@ -82,7 +82,7 @@ const Layout = () => {
 							sx={{ paddingLeft: 10, paddingRight: 10 }}
 						>
 							<NavLink
-								to="/dashboard"
+								to="/"
 								className={({ isActive }) =>
 									`${
 										isActive ? "bg-gray-200" : ""
