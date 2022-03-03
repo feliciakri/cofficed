@@ -82,7 +82,7 @@ const Layout = () => {
 							sx={{ paddingLeft: 10, paddingRight: 10 }}
 						>
 							<NavLink
-								to="/dashboard"
+								to="/"
 								className={({ isActive }) =>
 									`${
 										isActive ? "bg-gray-200" : ""

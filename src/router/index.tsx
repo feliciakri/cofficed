@@ -10,6 +10,7 @@ import DashboardEmployeeVaccine from "../pages/dashboard-employee/vaccine";
 import DashboardEmployeeSchedule from "../pages/dashboard-employee/schedule";
 import Login from "../pages/login";
 import ProfileSetting from "../pages/profile/setting";
+import NotFound from "../pages/404";
 
 const Router = () => {
 	const { state } = useContext(AuthContext);
@@ -23,10 +24,7 @@ const Router = () => {
 				<Route path="/" element={<Layout />}>
 					{isLogged && (
 						<>
-							<Route
-								path="/dashboard"
-								element={<DashboardEmployee />}
-							/>
+							<Route path="/" element={<DashboardEmployee />} />
 							<Route
 								path="/dashboard-employee/schedule"
 								element={<DashboardEmployeeSchedule />}
@@ -58,6 +56,7 @@ const Router = () => {
 						</>
 					)}
 				</Route>
+				<Route element={NotFound} />
 			</Routes>
 		</BrowserRouter>
 	);
