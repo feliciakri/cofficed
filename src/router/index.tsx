@@ -4,7 +4,7 @@ import Layout from "../components/Layout";
 import { AuthContext } from "../context/AuthContext";
 import DashboardAdmin from "../pages/dashboard-admin";
 import DashboardAdminRequest from "../pages/dashboard-admin/request";
-import DashboardAdminVaccine from "../pages/dahsboard-admin/vaccine";
+import DashboardAdminVaccine from "../pages/dashboard-admin/vaccine";
 import DashboardEmployee from "../pages/dashboard-employee";
 import DashboardEmployeeVaccine from "../pages/dashboard-employee/vaccine";
 import DashboardEmployeeSchedule from "../pages/dashboard-employee/schedule";
