@@ -9,6 +9,7 @@ import DashboardEmployee from "../pages/dashboard-employee";
 import DashboardEmployeeVaccine from "../pages/dashboard-employee/vaccine";
 import DashboardEmployeeSchedule from "../pages/dashboard-employee/schedule";
 import Login from "../pages/login";
+import ProfileSetting from "../pages/profile/setting";
 
 const Router = () => {
 	const { state } = useContext(AuthContext);
@@ -34,6 +35,10 @@ const Router = () => {
 								path="/dashboard-employee/vaccine"
 								element={<DashboardEmployeeVaccine />}
 							/>
+							<Route
+								path="/profile/setting"
+								element={<ProfileSetting />}
+							/>
 						</>
 					)}
 					{isLogged && isAdmin && (
@@ -46,10 +51,10 @@ const Router = () => {
 								path="/dashboard-admin/wfo-request"
 								element={<DashboardAdminRequest />}
 							/>
-              <Route
-                path="/dashboard-admin/quota-schedule"
-                element={<DashboardAdmin />}
-              />
+							<Route
+								path="/dashboard-admin/quota-schedule"
+								element={<DashboardAdmin />}
+							/>
 						</>
 					)}
 				</Route>
