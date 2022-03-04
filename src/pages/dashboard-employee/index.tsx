@@ -276,7 +276,7 @@ const DashboardEmployee = () => {
 				)}
 				{checkInId && (
 					<h1 className="text-3xl font-fraunces">
-						You have been checked in today! 🎉
+						You have checked in for today! 🎉
 					</h1>
 				)}
 				{!attendanceId && (
