@@ -10,7 +10,13 @@ import {
 } from "@mantine/core";
 import moment from "moment";
 import axios, { AxiosResponse, AxiosError } from "axios";
-import { MapPin, Users, CalendarBlank } from "phosphor-react";
+import {
+  MapPin,
+  Users,
+  CalendarBlank,
+  SortAscending,
+  SortDescending,
+} from "phosphor-react";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import { AuthContext } from "../../../context/AuthContext";
 import DateComponent from "../../../components/Calendar";
@@ -126,19 +132,26 @@ const fetchProfile = async (token: string | null) => {
     return response.data;
   }
 };
+type AttendancesUser = {
+  token: string | null;
+  order: string;
+};
+const getAttendancesByUser = async (data: AttendancesUser) => {
+  if (data.token) {
+    const { data: response } = await axios.get(
+      `${process.env.REACT_APP_API_URL}/attendances/user`,
 
-const getAllAttends = async (token: string | null) => {
-  if (token) {
-    const data = await axios.get(
-      `${process.env.REACT_APP_API_URL}/attendances/`,
       {
+        params: {
+          order: data.order,
+        },
         headers: {
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${data.token}`,
         },
       }
     );
 
-    return data;
+    return response.data;
   }
 };
 
@@ -287,7 +300,8 @@ const ModalRequest = ({ opened, setOpened, days }: ModalProps) => {
   );
 };
 const CardListRequest = ({ attends }: ListProps) => {
-  const { day, office, employee, notes, status } = attends;
+  const { day, office, notes, status, admin } = attends;
+
   const date = moment(day).format("LL");
   const styleApproved = status.toLocaleLowerCase() === "approved";
   const styleRejected = status.toLocaleLowerCase() === "rejected";
@@ -296,7 +310,7 @@ const CardListRequest = ({ attends }: ListProps) => {
     <div className="bg-white shadow-sm p-3 flex flex-col space-y-2 border-b text-gray-500">
       <div className="flex space-x-2 items-center">
         <Users size={25} />
-        <h1>{employee}</h1>
+        <h1>{admin}</h1>
       </div>
       <div className="flex space-x-2 items-center">
         <MapPin size={25} />
@@ -391,8 +405,13 @@ const DashboardEmployeeSchedule = () => {
     ...isDays,
   };
 
-  const { data: dataAllAttends } = useQuery("allAttendence", () =>
-    getAllAttends(token)
+  const { data: dataAllAttends, refetch: refetchAttendanceUser } = useQuery(
+    "attendanceByUser",
+    () =>
+      getAttendancesByUser({
+        token: token,
+        order: filteredByOrder ? "asc" : "desc",
+      })
   );
 
   const {
@@ -403,9 +422,11 @@ const DashboardEmployeeSchedule = () => {
 
   useEffect(() => {
     if (dataAllAttends && isLocation[0]) {
-      const num = Math.ceil(dataAllAttends.data.data.length / tablePerPage);
+      const num = Math.ceil(
+        dataAllAttends.current_attendances.length / tablePerPage
+      );
       setTotalPage(num);
-      const dataAttends = dataAllAttends?.data.data.slice(
+      const dataAttends = dataAllAttends?.current_attendances.slice(
         (activePage - 1) * tablePerPage,
         activePage * tablePerPage
       );
@@ -449,7 +470,13 @@ const DashboardEmployeeSchedule = () => {
       }
     }
   };
-
+  const [filteredByOrder, setFilteredByOrder] = useState<boolean>(false);
+  const handleFilterBySort = () => {
+    setFilteredByOrder(!filteredByOrder);
+    setTimeout(() => {
+      refetchAttendanceUser();
+    }, 300);
+  };
   return (
     <div className="flex flex-col lg:flex-row">
       {isDays && (
@@ -464,7 +491,20 @@ const DashboardEmployeeSchedule = () => {
             data={dataLocation}
           />
         )}
-        <h1 className="mt-5">Request Log</h1>
+        <div className="flex justify-between items-center my-4">
+          <h1>My Request Log</h1>
+          <button
+            className="rounded-r-xl border-2 h-full px-2 text-sm flex flex-row gap-x-2 items-center cursor-pointer transition duration-150 transform hover:scale-105 hover:bg-white"
+            onClick={handleFilterBySort}
+          >
+            {filteredByOrder ? (
+              <SortAscending size={20} />
+            ) : (
+              <SortDescending size={20} />
+            )}
+            Sort
+          </button>
+        </div>
         <div className="flex flex-col justify-between h-screen">
           <div className="flex flex-col my-2">
             {isAttendences?.map((data: AttendsProps, i: number) => (
