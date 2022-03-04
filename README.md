@@ -1,46 +1,86 @@
-# Getting Started with Create React App
+<h1 align="center">Welcome to Cofficed 👋</h1>
+<p>
+  <img alt="Version" src="https://img.shields.io/badge/version-0.9.0-blue.svg?cacheSeconds=2592000" />
+</p>
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+![Libraries.io dependency status for GitHub repo](https://img.shields.io/librariesio/github/feliciakri/cofficed)
+![GitHub commit activity](https://img.shields.io/github/commit-activity/m/feliciakri/cofficed)
+![Vercel](https://vercelbadge.vercel.app/api/feliciakri/cofficed)
+![Website](https://img.shields.io/website?url=https%3A%2F%2Fcofficed.tech)
 
-## Available Scripts
+> New Normal Office Tracker and WFO Management System. Made as capstone project for Alterra Academy x Sirclo Bootcamp
 
-In the project directory, you can run:
+### ✨ [Demo](https://cofficed.tech)
 
-### `npm start`
+## Features
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+-   Login and Logout
+-   Change password and avatar
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+#### As Employee
 
-### `npm test`
+-   See dashboard of activities
+-   Check in to work
+-   Pick office to work and show quota on available dates
+-   Request WFO on certain day when quota is available
+-   See request log
+-   See list of people that will be working in that day and place
+-   Upload my vaccine certificates
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+#### As Admin
 
-### `npm run build`
+-   Change quota at certain dates in the calendar by office
+-   Approve and reject vaccine certificates uploaded by employees
+-   Sort vaccine certificates
+-   Approve and reject WFO requests by employee
+-   Filter WFO requests
+-   Sort WFO requests
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## Installation
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+Clone this project
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+#### Install
 
-### `npm run eject`
+```sh
+npm install
+```
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+#### Usage
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+```sh
+npm start
+```
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+#### Run tests
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+```sh
+npm run test
+```
 
-## Learn More
+## Environment Variables
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+To run this project, you will need to add the following environment variables to your .env file
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+`REACT_APP_API_URL`
+
+That contains the endpoint for the backend
+
+## Built With
+
+-   Component UI by [Mantine](https://mantine.dev)
+-   Icons by [Phosphor Icons](https://phosphoricons.com/)
+-   [TailwindCSS](tailwindcss.com/)
+-   [axios](https://github.com/axios/axios)
+-   [Typescript](https://www.typescriptlang.org/)
+-   [React Query](react-query.tanstack.com/)
+-   [React Hook Form](https://react-hook-form.com/)
+-   [React Router](https://reactrouter.com/)
+-   [React Date Range](https://github.com/hypeserver/react-date-range)
+-   [MomentJS](https://momentjs.com/)
+-   [Create React App](https://create-react-app.dev/)
+
+## 👤 Authors
+
+-   [@lukmannm](https://github.com/lukmannm/)
+-   [@feliciakri](https://github.com/feliciakri/)
