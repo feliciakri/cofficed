@@ -1,7 +1,7 @@
 import { Alert, Button, Group, Input, LoadingOverlay } from "@mantine/core";
 import axios from "axios";
 import moment from "moment";
-import { Bus, Syringe, HourglassMedium, SunDim } from "phosphor-react";
+import { Bus, HourglassMedium, SunDim } from "phosphor-react";
 import { useContext, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import { AuthContext } from "../../context/AuthContext";

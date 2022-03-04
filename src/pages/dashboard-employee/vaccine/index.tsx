@@ -1,4 +1,4 @@
-import { Syringe, Upload, X } from "phosphor-react";
+import { Spinner, Syringe, Upload, X } from "phosphor-react";
 import {
 	Stepper,
 	Button,
@@ -102,7 +102,7 @@ const ModalVaccine = ({ isOpened, setIsOpened }: ModalVaccineProps) => {
 			)}
 			{isFailed && (
 				<Alert title="Failed :(" color="red">
-					Please wait for the previous image verification...
+					Please wait for the previous certificate to be verified...
 				</Alert>
 			)}
 			<form className="my-2" onSubmit={onSubmit}>
@@ -205,6 +205,8 @@ const DashboardEmployeeVaccine = () => {
 								completedIcon={
 									certificate.status === "rejected" ? (
 										<X size={20} />
+									) : certificate.status === "pending" ? (
+										<Spinner size={20} />
 									) : (
 										""
 									)
