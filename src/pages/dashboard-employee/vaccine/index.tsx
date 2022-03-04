@@ -184,9 +184,8 @@ const DashboardEmployeeVaccine = () => {
 			<ModalVaccine isOpened={isOpened} setIsOpened={setIsOpened} />
 			<div className="flex flex-row space-x-2 items-center">
 				<h1 className="capitalize font-fraunces text-2xl">
-					vaccine certificates
+					vaccine certificates 💉
 				</h1>
-				<Syringe size={30} className="text-red-500" />
 			</div>
 			<div className="my-6">
 				<Stepper
