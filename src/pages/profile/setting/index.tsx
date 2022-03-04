@@ -1,5 +1,4 @@
 import {
-	useMantineTheme,
 	LoadingOverlay,
 	Button,
 	Modal,
@@ -12,8 +11,8 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../../../context/AuthContext";
 import { Dropzone, MIME_TYPES } from "@mantine/dropzone";
-import { useContext } from "react";
-import axios from "axios";
+import { ChangeEvent, useContext } from "react";
+import axios, { AxiosError, AxiosResponse } from "axios";
 import { useMutation, useQuery } from "react-query";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { AuthActionKind } from "../../../context/AuthReducer";
@@ -32,25 +31,6 @@ const fetchProfile = async (token: string | null) => {
 		return data.data.data;
 	}
 };
-
-//change password
-// const changePassword = async (password: string, token: string | null) => {
-// 	console.log(password);
-// 	axios.put(`${process.env.REACT_APP_API_URL}/users/`, {
-// 		password: password,
-// 	}, {
-// 		headers: {
-// 			Authorization: `Bearer ${token}`,
-// 		},
-// 	})
-// 	.then(function (response) {
-// 		console.log(response);
-// 	}
-// 	)
-// 	.catch(function (error) {
-// 		console.log(error);
-// 	}
-// };
 
 type ModalProps = {
 	isOpened: boolean;
@@ -72,17 +52,25 @@ type InputPassword = {
 };
 
 const postAvatar = async (data: any) => {
-	alert(data);
-	const { token, image } = data;
-	const { data: response } = await axios
-		.post(`${process.env.REACT_APP_API_URL}/users/avatar/`, image, {
-			headers: {
-				"Content-Type": "multipart/form-data",
-				Authorization: `Bearer ${token}`,
-			},
-		})
-		.catch((err) => err);
-	return response.data;
+	if (data) {
+		console.log(data);
+		const { token, image } = await data;
+		const response = await axios
+			.post(`${process.env.REACT_APP_API_URL}/users/avatar/`, image, {
+				headers: {
+					"Content-Type": "multipart/form-data",
+					Authorization: `Bearer ${token}`,
+				},
+			})
+			.then((response: AxiosResponse) => {
+				return response;
+			})
+			.catch((error: AxiosError) => {
+				return error.message;
+			});
+
+		return response;
+	}
 };
 
 const ModalAvatar = ({ isOpened, setIsOpened }: ModalProps) => {
@@ -113,15 +101,17 @@ const ModalAvatar = ({ isOpened, setIsOpened }: ModalProps) => {
 		},
 	});
 
-	const onSubmit: SubmitHandler<InputImage> = async (data) => {
-		const bodyData = new FormData();
-		bodyData.append("image", data.image[0]);
-		console.log(bodyData);
-		const dataInput = {
-			token: token,
-			image: bodyData,
-		};
-		await mutation.mutate(dataInput);
+	const onSubmit = async (e: ChangeEvent<HTMLFormElement>) => {
+		e.preventDefault();
+		if (isImage) {
+			const bodyData = new FormData();
+			bodyData.append("image", isImage);
+			const dataInput = {
+				token: token,
+				image: bodyData,
+			};
+			await mutation.mutate(dataInput);
+		}
 	};
 
 	const handleInputImage = (files: any) => {
@@ -144,7 +134,7 @@ const ModalAvatar = ({ isOpened, setIsOpened }: ModalProps) => {
 					Image upload failed
 				</Alert>
 			)}
-			<form onSubmit={handleSubmit(onSubmit)} className="my-2">
+			<form onSubmit={onSubmit} className="my-2">
 				<Dropzone
 					onDrop={handleInputImage}
 					onReject={(files) => console.log("rejected files", files)}
@@ -170,7 +160,7 @@ const ModalAvatar = ({ isOpened, setIsOpened }: ModalProps) => {
 								</Text>
 								{isImage && (
 									<img
-										className="mt-10"
+										className="mt-5"
 										src={isImage}
 										alt="images avatar"
 									/>

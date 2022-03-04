@@ -135,7 +135,7 @@ const ModalRequest = ({
 			<>
 				<div className="flex flex-row justify-between bg-blue-100 px-4 text-sm">
 					<div className="w-1/2 flex flex-col py-4">
-						<h1>Location WFO</h1>
+						<h1>Office Location</h1>
 						<p className="font-semibold">{office}</p>
 					</div>
 					<div className="w-1/2 flex flex-col py-4">
@@ -166,11 +166,11 @@ const ModalRequest = ({
 								required
 							>
 								<Radio value="approved" className="border p-2">
-									Approved
+									Approve
 								</Radio>
 
 								<Radio value="rejected" className="border p-2">
-									Rejected
+									Reject
 								</Radio>
 							</RadioGroup>
 						</div>
@@ -452,7 +452,7 @@ const DashboardAdminRequest = () => {
 	return (
 		<>
 			<div className="py-5 font-inter">
-				<h1 className="text-xl font-fraunces">WFO Request</h1>
+				<h1 className="text-xl font-fraunces">WFO Requests</h1>
 				<div className="flex flex-row items-center justify-between">
 					<div className="w-1/3">
 						<DateRangePicker
@@ -510,12 +510,11 @@ const DashboardAdminRequest = () => {
 							</tr>
 						</thead>
 						<tbody>
-							{isAttendences &&
-								isAttendences?.map(
-									(data: AttendsProps, i: number) => (
-										<TableAdmin attends={data} key={i} />
-									)
-								)}
+							{isAttendences?.map(
+								(data: AttendsProps, i: number) => (
+									<TableAdmin attends={data} key={i} />
+								)
+							)}
 						</tbody>
 					</Table>
 				</div>

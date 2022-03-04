@@ -33,7 +33,7 @@ const Login = () => {
 					type: AuthActionKind.LOGIN_SUCCESS,
 					payload: { token: res.data.data.token, role: role },
 				});
-				navigate("/dashboard");
+				navigate("/");
 			})
 			.catch((err: any) => {
 				setIsFailed(true);

@@ -1,7 +1,7 @@
 import { Alert, Button, Group, Input, LoadingOverlay } from "@mantine/core";
 import axios from "axios";
 import moment from "moment";
-import { Bus, Syringe, HourglassMedium, SunDim } from "phosphor-react";
+import { Bus, HourglassMedium, SunDim } from "phosphor-react";
 import { useContext, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import { AuthContext } from "../../context/AuthContext";
@@ -26,33 +26,11 @@ type CardProps = {
 	data: any;
 };
 
-type CertificateVaccine = {
-	admin: string;
-	id: string;
-	dosage: number;
-	image: string;
-	user: string;
-	status: string;
-};
-
 type AttendanceUser = {
 	token: string | null;
 	status: string;
 };
-const fecthCertificate = async (token: string | null) => {
-	if (token) {
-		const { data: response } = await axios.get(
-			`${process.env.REACT_APP_API_URL}/certificates/user`,
-			{
-				headers: {
-					Authorization: `Bearer ${token}`,
-				},
-			}
-		);
 
-		return response.data;
-	}
-};
 const fetchProfile = async (token: string | null) => {
 	if (token) {
 		const data = await axios.get(
@@ -83,13 +61,13 @@ const fetchCheckIn = async (token: string | null) => {
 	}
 };
 
-const postCheckIn = async ({ token, attendance_id, temprature }: any) => {
+const postCheckIn = async ({ token, attendance_id, temperature }: any) => {
 	if (token) {
 		const { data: response } = await axios.post(
 			`${process.env.REACT_APP_API_URL}/check/ins`,
 			{
 				attendance_id: attendance_id,
-				temprature: +temprature,
+				temperature: +temperature,
 			},
 			{
 				headers: {
@@ -184,7 +162,7 @@ const DashboardEmployee = () => {
 	const queryClient = useQueryClient();
 	const [isSucces, setIsSucces] = useState<boolean>(false);
 	const [isFailed, setIsFailed] = useState<boolean>(false);
-	const [isTemprature, setIsTemprature] = useState<number>();
+	const [isTemperature, setIsTemperature] = useState<number>();
 	const dateNow = Date.now();
 	const date = moment(dateNow).format("YYYY-MM-DD");
 	const { isLoading, data } = useQuery("getProfile", () =>
@@ -193,7 +171,7 @@ const DashboardEmployee = () => {
 	const { data: dataCheckIn } = useQuery("getCheckIn", () =>
 		fetchCheckIn(token)
 	);
-	const { name, office_name } = data;
+	const { name } = data;
 
 	const { data: attendaceApprove } = useQuery("getAttendanceApproved", () =>
 		fetchAttendanceUser({
@@ -216,10 +194,6 @@ const DashboardEmployee = () => {
 		})
 	);
 
-	const { data: vaccineUser } = useQuery("getVaccineUser", () =>
-		fecthCertificate(token)
-	);
-
 	const mutation = useMutation(postCheckIn, {
 		onSuccess: async () => {
 			queryClient.invalidateQueries("getCheckIn");
@@ -236,20 +210,15 @@ const DashboardEmployee = () => {
 		},
 	});
 
-	const isVaccine = vaccineUser
-		?.filter((data: CertificateVaccine) => data.status === "approved")
-		.map((data: CertificateVaccine) => {
-			return data;
-		});
 	const attendanceFilter = attendaceApprove?.current_attendances
 		?.filter(
 			(data: AttendanceUserDay) =>
-				moment(data.day).format("YYYY-MM-DD") === date &&
-				data.office === office_name
+				moment(data.day).format("YYYY-MM-DD") === date
 		)
 		.map((data: AttendanceUserDay) => {
 			return data;
 		});
+
 	const attendanceId =
 		attendanceFilter?.length > 0 ? attendanceFilter[0].id : undefined;
 	const isCheckIn = dataCheckIn
@@ -258,13 +227,12 @@ const DashboardEmployee = () => {
 			return data;
 		});
 	const checkInId = isCheckIn?.length > 0 ? isCheckIn[0] : undefined;
-	const vaccineApproved = isVaccine?.length > 0 ? isVaccine[0] : undefined;
 
 	const handleCheckIn = async () => {
 		await mutation.mutate({
 			token: token,
 			attendance_id: attendanceId,
-			temprature: isTemprature,
+			temperature: isTemperature,
 		});
 	};
 
@@ -298,53 +266,43 @@ const DashboardEmployee = () => {
 			<div className="my-2">
 				{isSucces && (
 					<Alert title="Checked in!" color="blue">
-						Have a cup of coffee and enjoy your day
+						Have a cup of coffee and enjoy your day ☕💻
 					</Alert>
 				)}
 				{isFailed && (
 					<Alert title="Failed!" color="red">
-						You have been check in today!
+						You failed to check in today 😿
 					</Alert>
 				)}
-				{checkInId && vaccineApproved && (
+				{checkInId && (
 					<h1 className="text-3xl font-fraunces">
 						You have been checked in today! 🎉
 					</h1>
 				)}
 				{!attendanceId && (
 					<h1 className="text-3xl font-fraunces">
-						You don't have request WFO today!
+						You don't have no WFO request today!
 					</h1>
 				)}
-				{!vaccineApproved && (
-					<h1 className="text-3xl font-fraunces">
-						You must to upload your certificate Vaccine
-					</h1>
-				)}
-				{attendanceId && vaccineApproved && !checkInId && (
+
+				{attendanceId && !checkInId && (
 					<>
 						<h1 className="text-3xl font-fraunces">
 							Enjoy your WFH today!
 						</h1>
 						<div className="my-4 flex flex-row gap-x-2 items-end">
 							<div className="w-1/6">
-								<label>Temprature</label>
+								<label>Temperature</label>
 								<Input
 									type="number"
-									placeholder="Temprature"
+									placeholder="Temperature"
 									onChange={(
 										e: React.ChangeEvent<HTMLInputElement>
-									) => setIsTemprature(+e.target.value)}
+									) => setIsTemperature(+e.target.value)}
 								/>
 							</div>
 							<Button
 								style={{ backgroundColor: "#A5D8FF" }}
-								rightIcon={
-									<Syringe
-										size={20}
-										className="text-red-500"
-									/>
-								}
 								onClick={handleCheckIn}
 							>
 								Check In 🌡️✅
