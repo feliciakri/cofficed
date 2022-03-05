@@ -1,4 +1,4 @@
-import { Alert, Button, Input } from "@mantine/core";
+import { Alert, Button, Input, PasswordInput } from "@mantine/core";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { EnvelopeSimple, Key, WarningCircle } from "phosphor-react";
 import { useContext, useState } from "react";
@@ -62,7 +62,7 @@ const Login = () => {
 
 							{isFailed && (
 								<Alert title="Failed!" color="red">
-									Failed:(
+									Failed to log in.
 								</Alert>
 							)}
 							<form
@@ -94,7 +94,7 @@ const Login = () => {
 									<label className="block text-sm">
 										Password
 									</label>
-									<Input
+									<PasswordInput
 										type="password"
 										placeholder="Your password"
 										icon={<Key className="w-6 h-6" />}
