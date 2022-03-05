@@ -271,7 +271,7 @@ const DashboardEmployee = () => {
 				)}
 				{isFailed && (
 					<Alert title="Failed!" color="red">
-						You failed to check in today 😿
+						You failed to check in 😿
 					</Alert>
 				)}
 				{checkInId && (
@@ -281,14 +281,14 @@ const DashboardEmployee = () => {
 				)}
 				{!attendanceId && (
 					<h1 className="text-3xl font-fraunces">
-						You have no WFO request today!
+						Enjoy your WFH today! 🏠
 					</h1>
 				)}
 
 				{attendanceId && !checkInId && (
 					<>
 						<h1 className="text-3xl font-fraunces">
-							Please check in to the office today!
+							Welcome to the office, please check in!
 						</h1>
 						<div className="my-4 flex flex-row gap-x-2 items-end">
 							<div className="w-1/6">

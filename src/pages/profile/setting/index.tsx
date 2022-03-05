@@ -8,14 +8,12 @@ import {
 	PasswordInput,
 } from "@mantine/core";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../../../context/AuthContext";
 import { Dropzone, MIME_TYPES } from "@mantine/dropzone";
 import { ChangeEvent, useContext } from "react";
 import axios, { AxiosError, AxiosResponse } from "axios";
 import { useMutation, useQuery } from "react-query";
 import { SubmitHandler, useForm } from "react-hook-form";
-import { AuthActionKind } from "../../../context/AuthReducer";
 
 const fetchProfile = async (token: string | null) => {
 	if (token) {
@@ -287,8 +285,8 @@ const ProfileSetting = () => {
 						Your Profile
 					</h3>
 					<p className="max-w-2xl text-sm text-gray-500">
-						This information will be displayed publicly so be
-						careful what you share.
+						Only your email, name and avatar are visible to your
+						coworkers.
 					</p>
 				</div>
 				<div className="mt-6">
