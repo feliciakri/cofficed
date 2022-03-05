@@ -343,7 +343,9 @@ const ListAttendances = ({ attends }: ListProps) => {
 	return (
 		<div className="flex flex-row border-b-2 gap-x-4 items-center">
 			<img
-				src={`${user_avatar ? user_avatar : "/apple-touch-icon.png"}`}
+				src={`${
+					user_avatar ? user_avatar : "/cofficed-logo-black.svg"
+				}`}
 				alt="logo"
 				className="w-9 h-9"
 			/>

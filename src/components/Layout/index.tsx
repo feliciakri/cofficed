@@ -210,7 +210,7 @@ const Layout = () => {
 								<NavLink to="/dashboard">
 									<div className="flex flex-row gap-x-2 items-center mx-3 font-fraunces">
 										<img
-											src="/apple-touch-icon.png"
+											src="/cofficed-logo-black.svg"
 											alt="logo"
 											className="w-9 h-9"
 										/>
