@@ -7,7 +7,7 @@ import {
 	Text,
 } from "@mantine/core";
 import { SubmitHandler, useForm } from "react-hook-form";
-import { Envelope, Key, WarningCircle } from "phosphor-react";
+import { Envelope, Key } from "phosphor-react";
 import { useContext, useState } from "react";
 import { AuthContext } from "../../context/AuthContext";
 import { AuthActionKind } from "../../context/AuthReducer";
@@ -121,9 +121,9 @@ const Login = () => {
 											{...register("password", {
 												required: true,
 												minLength: {
-													value: 8,
+													value: 6,
 													message:
-														"Password must be at least 8 characters",
+														"Password must be at least 6 characters",
 												},
 											})}
 										/>
