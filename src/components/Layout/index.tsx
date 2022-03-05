@@ -186,7 +186,7 @@ const Layout = () => {
 								<div className="flex flex-row gap-x-2 items-center hover:cursor-pointer">
 									<img
 										src={avatar}
-										alt="logo.png"
+										alt="/cofficed-logo-black.svg"
 										className="rounded-full w-12 h-12"
 									/>
 									<div className="flex flex-row items-center justify-between w-full">
