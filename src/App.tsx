@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from "react-query";
 import { AuthContextProvider } from "./context/AuthContext";
 import "react-date-range/dist/styles.css";
 import "react-date-range/dist/theme/default.css";
+import { NotificationsProvider } from "@mantine/notifications";
 const queryClient = new QueryClient();
 
 function App() {
@@ -23,7 +24,9 @@ function App() {
 						}}
 						emotionOptions={{ key: "mantine", prepend: false }}
 					>
-						<Router />
+						<NotificationsProvider>
+							<Router />
+						</NotificationsProvider>
 					</MantineProvider>
 				</AuthContextProvider>
 			</QueryClientProvider>

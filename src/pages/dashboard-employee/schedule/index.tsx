@@ -140,7 +140,6 @@ const getAttendancesByUser = async (data: AttendancesUser) => {
   if (data.token) {
     const { data: response } = await axios.get(
       `${process.env.REACT_APP_API_URL}/attendances/user`,
-
       {
         params: {
           order: data.order,
@@ -347,7 +346,7 @@ const CardListRequest = ({ attends }: ListProps) => {
     </div>
   );
 };
-const ListAttendences = ({ attends }: ListProps) => {
+const ListAttendances = ({ attends }: ListProps) => {
   const { employee, user_email, user_avatar } = attends;
   return (
     <div className="flex flex-row border-b-2 gap-x-4 items-center">
@@ -565,7 +564,7 @@ const DashboardEmployeeSchedule = () => {
             )}
             {!dataAttendensByDay && <p>No one</p>}
             {dataAttendensByDay?.map((attends: AttendsProps, i: number) => (
-              <ListAttendences attends={attends} key={i} />
+              <ListAttendances attends={attends} key={i} />
             ))}
           </ScrollArea>
         </div>

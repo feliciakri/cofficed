@@ -11,6 +11,7 @@ import DashboardEmployeeSchedule from "../pages/dashboard-employee/schedule";
 import Login from "../pages/login";
 import ProfileSetting from "../pages/profile/setting";
 import NotFound from "../pages/404";
+import AddEmployee from "../pages/dashboard-employee/addemployee";
 
 const Router = () => {
 	const { state } = useContext(AuthContext);
@@ -52,6 +53,10 @@ const Router = () => {
 							<Route
 								path="/dashboard-admin/quota-schedule"
 								element={<DashboardAdmin />}
+							/>
+							<Route
+								path="/dashboard-admin/add-employee"
+								element={<AddEmployee />}
 							/>
 						</>
 					)}

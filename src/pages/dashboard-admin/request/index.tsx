@@ -281,7 +281,6 @@ const TableAdmin = ({ attends }: PropsTable) => {
 						<Menu.Item onClick={() => handleStatus("approved")}>
 							Approve
 						</Menu.Item>
-						<Divider />
 						<Menu.Item onClick={() => handleStatus("rejected")}>
 							Reject
 						</Menu.Item>
