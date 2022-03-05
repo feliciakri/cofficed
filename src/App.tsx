@@ -25,7 +25,7 @@ function App() {
 						}}
 						emotionOptions={{ key: "mantine", prepend: false }}
 					>
-						<NotificationsProvider>
+						<NotificationsProvider autoClose={10000}>
 							<Router />
 						</NotificationsProvider>
 					</MantineProvider>
