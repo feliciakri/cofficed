@@ -1,9 +1,5 @@
 <h1 align="center">Welcome to Cofficed 👋</h1>
-<p>
-  <img alt="Version" src="https://img.shields.io/badge/version-0.9.0-blue.svg?cacheSeconds=2592000" />
-</p>
 
-![Libraries.io dependency status for GitHub repo](https://img.shields.io/librariesio/github/feliciakri/cofficed)
 ![GitHub commit activity](https://img.shields.io/github/commit-activity/m/feliciakri/cofficed)
 ![Vercel](https://vercelbadge.vercel.app/api/feliciakri/cofficed)
 ![Website](https://img.shields.io/website?url=https%3A%2F%2Fcofficed.tech)
@@ -12,7 +8,11 @@
 
 ### ✨ [Demo](https://cofficed.tech)
 
-## Features
+## ⚙️ Backend
+
+[Github Repository for the backend](https://github.com/HamzahAA15/group2-project-capstone)
+
+## 🔮 Features
 
 -   Login and Logout
 -   Change password and avatar
@@ -36,9 +36,14 @@
 -   Filter WFO requests
 -   Sort WFO requests
 
-## Installation
+## 🧰 Installation
 
 Clone this project
+
+```sh
+git@github.com:feliciakri/cofficed.git
+cd cofficed
+```
 
 #### Install
 
@@ -52,13 +57,7 @@ npm install
 npm start
 ```
 
-#### Run tests
-
-```sh
-npm run test
-```
-
-## Environment Variables
+## 🙊 Environment Variables
 
 To run this project, you will need to add the following environment variables to your .env file
 
@@ -66,7 +65,7 @@ To run this project, you will need to add the following environment variables to
 
 That contains the endpoint for the backend
 
-## Built With
+## ⛏️ Built With
 
 -   Component UI by [Mantine](https://mantine.dev)
 -   Icons by [Phosphor Icons](https://phosphoricons.com/)
