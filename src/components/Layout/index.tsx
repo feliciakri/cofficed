@@ -7,19 +7,21 @@ import {
 	CalendarCheck,
 	Scroll,
 	UserPlus,
-	DotsThreeOutline,
+	HandWaving,
 } from "phosphor-react";
 import { Link } from "react-router-dom";
 import {
 	AppShell,
 	Burger,
-	Button,
 	Header,
 	MediaQuery,
 	Navbar,
 	ScrollArea,
 	useMantineTheme,
 	LoadingOverlay,
+	Divider,
+	Badge,
+	Center,
 } from "@mantine/core";
 import { useState } from "react";
 import { NavLink } from "react-router-dom";
@@ -116,6 +118,21 @@ const Layout = () => {
 							</NavLink>
 							{isAdmin && (
 								<>
+									<Divider />
+									<Center>
+										<Badge
+											variant="gradient"
+											gradient={{
+												from: "grape",
+												to: "pink",
+												deg: 35,
+											}}
+											className="mt-3"
+										>
+											Admin Menus
+										</Badge>
+									</Center>
+
 									<NavLink
 										to="/dashboard-admin/quota-schedule"
 										className={({ isActive }) =>
@@ -125,9 +142,6 @@ const Layout = () => {
 										}
 									>
 										<CalendarCheck size={20} />
-										<div className="bg-red-200 px-2 rounded-xl text-red-900 text-sm font-semibold">
-											Admin
-										</div>
 										Quota Schedule
 									</NavLink>
 									<NavLink
@@ -139,9 +153,6 @@ const Layout = () => {
 										}
 									>
 										<Scroll size={20} />
-										<div className="bg-red-200 px-2 rounded-xl text-red-900 text-sm font-semibold">
-											Admin
-										</div>
 										Vaccine Certificates
 									</NavLink>
 									<NavLink
@@ -152,11 +163,19 @@ const Layout = () => {
 											} flex flex-row items-center w-full hover:bg-gray-200 cursor-point py-3 px-2 my-1 gap-x-4 rounded-md`
 										}
 									>
-										<UserPlus size={20} />
-										<div className="bg-red-200 px-2 rounded-xl text-red-900 text-sm font-semibold">
-											Admin
-										</div>
+										<HandWaving size={20} />
 										WFO Requests
+									</NavLink>
+									<NavLink
+										to="/dashboard-admin/add-employee"
+										className={({ isActive }) =>
+											`${
+												isActive ? "bg-gray-200" : ""
+											} flex flex-row items-center w-full hover:bg-gray-200 cursor-point py-3 px-2 my-1 gap-x-4 rounded-md`
+										}
+									>
+										<UserPlus size={20} />
+										Add New Employee
 									</NavLink>
 								</>
 							)}

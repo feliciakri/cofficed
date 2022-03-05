@@ -281,14 +281,14 @@ const DashboardEmployee = () => {
 				)}
 				{!attendanceId && (
 					<h1 className="text-3xl font-fraunces">
-						You don't have no WFO request today!
+						You have no WFO request today!
 					</h1>
 				)}
 
 				{attendanceId && !checkInId && (
 					<>
 						<h1 className="text-3xl font-fraunces">
-							Enjoy your WFH today!
+							Please check in to the office today!
 						</h1>
 						<div className="my-4 flex flex-row gap-x-2 items-end">
 							<div className="w-1/6">
