@@ -15,6 +15,7 @@ import { useMutation, useQuery, useQueryClient } from "react-query";
 import { AuthContext } from "../../../context/AuthContext";
 import DateComponent from "../../../components/Calendar";
 import { changeToDate } from "../../../utils/formatDateMoment";
+import DefaultEmptyState from "../../../components/EmptyStates";
 
 type CertificateVaccine = {
 	admin: string;
@@ -517,7 +518,8 @@ const DashboardEmployeeSchedule = () => {
 					</Button>
 					{!vaccineApproved && (
 						<p className="text-sm">
-							You must to upload your certificates! (min 2)
+							You must upload your vaccine certificates in order
+							to request WFO! (min 2)
 						</p>
 					)}
 				</div>
@@ -538,7 +540,7 @@ const DashboardEmployeeSchedule = () => {
 								overlayColor="#c5c5c5"
 							/>
 						)}
-						{!dataAttendantsByDay && <p>No one</p>}
+						{!dataAttendantsByDay && <DefaultEmptyState />}
 						{dataAttendantsByDay?.map(
 							(attends: AttendsProps, i: number) => (
 								<ListAttendances attends={attends} key={i} />
