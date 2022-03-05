@@ -226,7 +226,7 @@ const DashboardEmployeeVaccine = () => {
 			<div className="my-6">
 				<h1 className="py-2">Upload your certificate</h1>
 				<Button
-					radius="lg"
+					radius="sm"
 					rightIcon={<Upload size={20} />}
 					onClick={() => setIsOpened(true)}
 				>
