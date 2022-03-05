@@ -40,6 +40,11 @@
 
 Clone this project
 
+```sh
+git@github.com:feliciakri/cofficed.git
+cd cofficed
+```
+
 #### Install
 
 ```sh
@@ -50,12 +55,6 @@ npm install
 
 ```sh
 npm start
-```
-
-#### Run tests
-
-```sh
-npm run test
 ```
 
 ## 🙊 Environment Variables
