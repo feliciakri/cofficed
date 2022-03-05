@@ -254,7 +254,7 @@ const ProfileSetting = () => {
 	const { dispatch } = useContext(AuthContext);
 	const { state } = useContext(AuthContext);
 	const { token, role } = state;
-	const navigate = useNavigate();
+
 	const isAdmin = role?.toLowerCase() === "admin";
 	const { isLoading, data } = useQuery("getProfile", () =>
 		fetchProfile(token)
@@ -263,18 +263,7 @@ const ProfileSetting = () => {
 	const [amOpened, setAmOpened] = useState(false);
 	//password modal
 	const [pwOpened, setPwOpened] = useState(false);
-	//logout function
-	function LogOutHandler() {
-		localStorage.removeItem("token");
-		localStorage.removeItem("users");
-		dispatch({
-			type: AuthActionKind.LOGOUT,
-		});
-		const redirect = async () => {
-			await navigate("/");
-		};
-		redirect();
-	}
+
 	if (isLoading) {
 		return (
 			<>
@@ -294,10 +283,6 @@ const ProfileSetting = () => {
 				datap={data}
 			/>
 			<div className="divide-y divide-gray-200">
-				<Button onClick={LogOutHandler} variant="outline" color="red">
-					Log Out
-				</Button>
-
 				<div className="mt-5 space-y-1">
 					<h3 className="text-lg leading-6 font-medium text-gray-900">
 						Profile
