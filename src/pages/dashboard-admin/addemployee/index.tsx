@@ -3,8 +3,6 @@ import {
 	Input,
 	InputWrapper,
 	PasswordInput,
-	Chips,
-	Chip,
 	Text,
 	RadioGroup,
 	Radio,
@@ -69,7 +67,7 @@ export default function AddEmployee() {
 					<div className="md:col-span-1">
 						<div className="px-4 sm:px-0">
 							<h3 className="text-lg font-fraunces leading-6 text-gray-900">
-								Personal Information
+								New Employee Information
 							</h3>
 							<p className="mt-1 text-sm text-gray-600">
 								Please check for data accuracy

@@ -251,7 +251,6 @@ const ModalPassword = ({
 };
 
 const ProfileSetting = () => {
-	const { dispatch } = useContext(AuthContext);
 	const { state } = useContext(AuthContext);
 	const { token, role } = state;
 
@@ -283,9 +282,9 @@ const ProfileSetting = () => {
 				datap={data}
 			/>
 			<div className="divide-y divide-gray-200">
-				<div className="mt-5 space-y-1">
-					<h3 className="text-lg leading-6 font-medium text-gray-900">
-						Profile
+				<div className="mt-2 space-y-1">
+					<h3 className="text-xl leading-6 font-medium font-fraunces text-gray-900">
+						Your Profile
 					</h3>
 					<p className="max-w-2xl text-sm text-gray-500">
 						This information will be displayed publicly so be

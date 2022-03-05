@@ -285,7 +285,7 @@ const ModalRequest = ({ opened, setOpened, days }: ModalProps) => {
 						onClick={handleRequestAttends}
 						disabled={isSuccess}
 					>
-						Send Request WFO
+						Send WFO Request
 					</button>
 				</div>
 			</Modal>
@@ -461,95 +461,106 @@ const DashboardEmployeeSchedule = () => {
 	};
 
 	return (
-		<div className="flex flex-col lg:flex-row">
-			{isDays && (
-				<ModalRequest
-					opened={opened}
-					setOpened={setOpened}
-					days={isDays}
-				/>
-			)}
-			<div className="lg:w-1/3">
-				{dataLocation && (
-					<Select
-						label="Select which office"
-						placeholder="Pick one"
-						onChange={handleChange}
-						data={dataLocation}
+		<>
+			<h1 className="font-fraunces text-xl mb-3">Schedule Your WFO</h1>
+			<div className="flex flex-col lg:flex-row">
+				{isDays && (
+					<ModalRequest
+						opened={opened}
+						setOpened={setOpened}
+						days={isDays}
 					/>
 				)}
-				<h1 className="mt-5">Request Log</h1>
-				<div className="flex flex-col justify-between h-screen">
-					<div className="flex flex-col my-2">
-						{isAttendences?.map((data: AttendsProps, i: number) => (
-							<CardListRequest attends={data} key={i} />
-						))}
-					</div>
-					<div className="flex my-14 justify-center">
-						<Pagination
-							page={activePage}
-							onChange={setPage}
-							total={totalPage}
-							color="cyan"
-							boundaries={1}
+				<div className="lg:w-1/3">
+					{dataLocation && (
+						<Select
+							label="Select which office"
+							placeholder="Pick one"
+							onChange={handleChange}
+							data={dataLocation}
 						/>
+					)}
+					<h1 className="mt-5">Request Log</h1>
+					<div className="flex flex-col justify-between h-screen">
+						<div className="flex flex-col my-2">
+							{isAttendences?.map(
+								(data: AttendsProps, i: number) => (
+									<CardListRequest attends={data} key={i} />
+								)
+							)}
+						</div>
+						<div className="flex my-14 justify-center">
+							<Pagination
+								page={activePage}
+								onChange={setPage}
+								total={totalPage}
+								color="cyan"
+								boundaries={1}
+							/>
+						</div>
+					</div>
+				</div>
+				<div className="mx-6">
+					<DateComponent
+						data={dataCalendar}
+						onHandle={handleChangeCalendar}
+						isMobile={true}
+						isTablet={false}
+						isDesktop={false}
+						isQuota={false}
+					/>
+				</div>
+				<div className="lg:w-2/5 my-4">
+					<div className="flex flex-col items-center justify-center">
+						<Button
+							color="green"
+							onClick={() => isDays && setOpened(true)}
+							className="my-4 mx-2"
+							disabled={!vaccineApproved}
+						>
+							<p className="text-lg py-4">
+								{" "}
+								Request WFO 📝 🏢 💼
+							</p>
+						</Button>
+						{!vaccineApproved && (
+							<p className="text-sm">
+								You must upload your vaccine certificates in
+								order to request WFO! (min 2)
+							</p>
+						)}
+					</div>
+					<div className="flex flex-col gap-y-2 rounded h-screen overflow-auto">
+						<h1 className="font-fraunces text-lg py-2">
+							You will be working with
+						</h1>
+						<ScrollArea>
+							{isFetching && (
+								<LoadingOverlay
+									visible={true}
+									loaderProps={{
+										size: "sm",
+										color: "blue",
+										variant: "bars",
+									}}
+									overlayOpacity={0.3}
+									overlayColor="#c5c5c5"
+								/>
+							)}
+							{!dataAttendantsByDay && <DefaultEmptyState />}
+							{dataAttendantsByDay?.map(
+								(attends: AttendsProps, i: number) => (
+									<ListAttendances
+										attends={attends}
+										key={i}
+									/>
+								)
+							)}
+						</ScrollArea>
 					</div>
 				</div>
 			</div>
-			<div className="mx-6">
-				<DateComponent
-					data={dataCalendar}
-					onHandle={handleChangeCalendar}
-					isMobile={true}
-					isTablet={false}
-					isDesktop={false}
-					isQuota={false}
-				/>
-			</div>
-			<div className="lg:w-2/5 my-4">
-				<div className="flex flex-col items-center justify-center">
-					<Button
-						color="green"
-						onClick={() => isDays && setOpened(true)}
-						className="my-4 mx-2"
-						disabled={!vaccineApproved}
-					>
-						<p className="text-lg py-4"> Request WFO 📝 🏢 💼</p>
-					</Button>
-					{!vaccineApproved && (
-						<p className="text-sm">
-							You must upload your vaccine certificates in order
-							to request WFO! (min 2)
-						</p>
-					)}
-				</div>
-				<div className="flex flex-col gap-y-2 rounded h-screen overflow-auto">
-					<h1 className="font-fraunces text-lg py-2">
-						You will be working with
-					</h1>
-					<ScrollArea>
-						{isFetching && (
-							<LoadingOverlay
-								visible={true}
-								loaderProps={{
-									size: "sm",
-									color: "blue",
-									variant: "bars",
-								}}
-								overlayOpacity={0.3}
-								overlayColor="#c5c5c5"
-							/>
-						)}
-						{!dataAttendantsByDay && <DefaultEmptyState />}
-						{dataAttendantsByDay?.map(
-							(attends: AttendsProps, i: number) => (
-								<ListAttendances attends={attends} key={i} />
-							)
-						)}
-					</ScrollArea>
-				</div>
-			</div>
-		</div>
+		</>
 	);
 };
 

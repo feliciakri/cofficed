@@ -452,7 +452,7 @@ const DashboardAdminRequest = () => {
 
 	return (
 		<>
-			<div className="py-5 font-inter">
+			<div className="py-5">
 				<h1 className="text-xl font-fraunces">WFO Requests</h1>
 				<div className="flex flex-row items-center justify-between">
 					<div className="w-1/3">
