@@ -8,14 +8,12 @@ import {
 	PasswordInput,
 } from "@mantine/core";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../../../context/AuthContext";
 import { Dropzone, MIME_TYPES } from "@mantine/dropzone";
 import { ChangeEvent, useContext } from "react";
 import axios, { AxiosError, AxiosResponse } from "axios";
 import { useMutation, useQuery } from "react-query";
 import { SubmitHandler, useForm } from "react-hook-form";
-import { AuthActionKind } from "../../../context/AuthReducer";
 
 const fetchProfile = async (token: string | null) => {
 	if (token) {
@@ -251,10 +249,9 @@ const ModalPassword = ({
 };
 
 const ProfileSetting = () => {
-	const { dispatch } = useContext(AuthContext);
 	const { state } = useContext(AuthContext);
 	const { token, role } = state;
-	const navigate = useNavigate();
+
 	const isAdmin = role?.toLowerCase() === "admin";
 	const { isLoading, data } = useQuery("getProfile", () =>
 		fetchProfile(token)
@@ -263,18 +260,7 @@ const ProfileSetting = () => {
 	const [amOpened, setAmOpened] = useState(false);
 	//password modal
 	const [pwOpened, setPwOpened] = useState(false);
-	//logout function
-	function LogOutHandler() {
-		localStorage.removeItem("token");
-		localStorage.removeItem("users");
-		dispatch({
-			type: AuthActionKind.LOGOUT,
-		});
-		const redirect = async () => {
-			await navigate("/");
-		};
-		redirect();
-	}
+
 	if (isLoading) {
 		return (
 			<>
@@ -294,17 +280,13 @@ const ProfileSetting = () => {
 				datap={data}
 			/>
 			<div className="divide-y divide-gray-200">
-				<Button onClick={LogOutHandler} variant="outline" color="red">
-					Log Out
-				</Button>
-
-				<div className="mt-5 space-y-1">
-					<h3 className="text-lg leading-6 font-medium text-gray-900">
-						Profile
+				<div className="mt-2 space-y-1">
+					<h3 className="text-xl leading-6 font-medium font-fraunces text-gray-900">
+						Your Profile
 					</h3>
 					<p className="max-w-2xl text-sm text-gray-500">
-						This information will be displayed publicly so be
-						careful what you share.
+						Only your email, name and avatar are visible to your
+						coworkers.
 					</p>
 				</div>
 				<div className="mt-6">

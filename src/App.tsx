@@ -21,10 +21,11 @@ function App() {
 								lg: 1200,
 								xl: 1400,
 							},
+							fontFamily: "Questrial, sans-serif",
 						}}
 						emotionOptions={{ key: "mantine", prepend: false }}
 					>
-						<NotificationsProvider>
+						<NotificationsProvider autoClose={10000}>
 							<Router />
 						</NotificationsProvider>
 					</MantineProvider>

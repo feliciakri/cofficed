@@ -250,7 +250,9 @@ const TableAdmin = ({ attends }: PropsTable) => {
 				<td className="capitalize flex flex-row space-x-2 items-center">
 					<img
 						src={`${
-							user_avatar ? user_avatar : "/apple-touch-icon.png"
+							user_avatar
+								? user_avatar
+								: "/cofficed-logo-black.svg"
 						}`}
 						alt="logo"
 						className="w-10 h-10 rounded-full"
@@ -450,7 +452,7 @@ const DashboardAdminRequest = () => {
 
 	return (
 		<>
-			<div className="py-5 font-inter">
+			<div className="py-5">
 				<h1 className="text-xl font-fraunces">WFO Requests</h1>
 				<div className="flex flex-row items-center justify-between">
 					<div className="w-1/3">

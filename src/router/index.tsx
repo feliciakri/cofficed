@@ -11,7 +11,7 @@ import DashboardEmployeeSchedule from "../pages/dashboard-employee/schedule";
 import Login from "../pages/login";
 import ProfileSetting from "../pages/profile/setting";
 import NotFound from "../pages/404";
-import AddEmployee from "../pages/dashboard-employee/addemployee";
+import AddEmployee from "../pages/dashboard-admin/addemployee";
 
 const Router = () => {
 	const { state } = useContext(AuthContext);

@@ -13,6 +13,8 @@ import { Dropzone, MIME_TYPES } from "@mantine/dropzone";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import axios, { AxiosError, AxiosResponse } from "axios";
 import { AuthContext } from "../../../context/AuthContext";
+import DefaultEmptyState from "../../../components/EmptyStates";
+
 type CertificateProps = {
 	dosage: number;
 	status: string;
@@ -148,7 +150,7 @@ const ModalVaccine = ({ isOpened, setIsOpened }: ModalVaccineProps) => {
 		</Modal>
 	);
 };
-const fecthCertificate = async (token: string | null) => {
+const fetchCertificate = async (token: string | null) => {
 	if (token) {
 		const { data: response } = await axios.get(
 			`${process.env.REACT_APP_API_URL}/certificates/user`,
@@ -168,7 +170,7 @@ const DashboardEmployeeVaccine = () => {
 	const { token } = state;
 
 	const { data, isLoading } = useQuery("getVaccineUser", () =>
-		fecthCertificate(token)
+		fetchCertificate(token)
 	);
 	const [active, setActive] = useState<number>(0);
 	useEffect(() => {
@@ -187,6 +189,12 @@ const DashboardEmployeeVaccine = () => {
 					vaccine certificates 💉
 				</h1>
 			</div>
+
+			{!data && (
+				<div className="mx-auto h-80 w-80 mt-5">
+					<DefaultEmptyState />
+				</div>
+			)}
 			<div className="my-6">
 				<Stepper
 					active={active}
@@ -214,17 +222,16 @@ const DashboardEmployeeVaccine = () => {
 						))
 						.reverse()}
 				</Stepper>
-
-				<div className="my-6">
-					<h1 className="py-2">Upload your certificate</h1>
-					<Button
-						radius="lg"
-						rightIcon={<Upload size={20} />}
-						onClick={() => setIsOpened(true)}
-					>
-						Upload
-					</Button>
-				</div>
+			</div>
+			<div className="my-6">
+				<h1 className="py-2">Upload your certificate</h1>
+				<Button
+					radius="sm"
+					rightIcon={<Upload size={20} />}
+					onClick={() => setIsOpened(true)}
+				>
+					Upload
+				</Button>
 			</div>
 		</div>
 	);

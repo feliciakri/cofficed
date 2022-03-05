@@ -78,6 +78,8 @@ That contains the endpoint for the backend
 -   [React Date Range](https://github.com/hypeserver/react-date-range)
 -   [MomentJS](https://momentjs.com/)
 -   [Create React App](https://create-react-app.dev/)
+-   [Lottie React](https://github.com/Gamote/lottie-react)
+-   [Tumbleweed animation by Vukasin Stanic](https://lottiefiles.com/58407-tumbleweed)
 
 ## 👤 Authors
 
