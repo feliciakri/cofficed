@@ -1,6 +1,5 @@
-import React, { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import {
-  Alert,
   Button,
   LoadingOverlay,
   Modal,
@@ -16,64 +15,40 @@ import {
   CalendarBlank,
   SortAscending,
   SortDescending,
+  XCircle,
 } from "phosphor-react";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import { AuthContext } from "../../../context/AuthContext";
 import DateComponent from "../../../components/Calendar";
 import { changeToDate } from "../../../utils/formatDateMoment";
+import {
+  AttendancesDay,
+  AttendancesProps,
+  CertificateVaccine,
+} from "../../../types/type";
+import { useNotifications } from "@mantine/notifications";
 
-type CertificateVaccine = {
-  admin: string;
-  id: string;
-  dosage: number;
-  image: string;
-  user: string;
-  status: string;
-};
-
-type AttendancesState = {
-  id: string;
-  office: string;
-  Quota: number;
-  date: string;
-};
-interface AttendancesDay {
-  id?: string;
-  office?: string;
-  Quota?: number;
-  date?: string;
-  token: string | null;
-}
-
-type AttendsProps = {
-  id: string;
-  office: string;
-  employee: string;
-  notes: string;
-  admin: string;
-  status: string;
-  day: string;
-  user_avatar: string;
-  user_email: string;
-  nik: string;
-};
 type LocationState = {
   id: string;
   name: string;
 };
 type ListProps = {
-  attends: AttendsProps;
+  attends: AttendancesProps;
 };
 
 type ModalProps = {
   opened: boolean;
   setOpened: (args: boolean) => void;
-  days: AttendancesState;
+  days: AttendancesDay;
+};
+
+type CalendarType = {
+  date: string | Date;
 };
 
 type PostType = {
   token: string | null;
-  id: string;
+  id: string | undefined;
 };
 
 const fetchCategory = async () => {
@@ -83,7 +58,6 @@ const fetchCategory = async () => {
 
 const postDate = async (data: PostType) => {
   const { token, id } = data;
-
   const response = await axios
     .post(
       `${process.env.REACT_APP_API_URL}/attendances/`,
@@ -98,9 +72,8 @@ const postDate = async (data: PostType) => {
       return response;
     })
     .catch((error: AxiosError) => {
-      return error.message;
+      return error.response?.data?.meta.message;
     });
-
   return response;
 };
 
@@ -118,40 +91,24 @@ const fecthCertificate = async (token: string | null) => {
   }
 };
 
-const fetchProfile = async (token: string | null) => {
-  if (token) {
-    const { data: response } = await axios.get(
-      `${process.env.REACT_APP_API_URL}/users/profile`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
-
-    return response.data;
-  }
-};
 type AttendancesUser = {
   token: string | null;
   order: string;
 };
 const getAttendancesByUser = async (data: AttendancesUser) => {
-  if (data.token) {
-    const { data: response } = await axios.get(
-      `${process.env.REACT_APP_API_URL}/attendances/user`,
-      {
-        params: {
-          order: data.order,
-        },
-        headers: {
-          Authorization: `Bearer ${data.token}`,
-        },
-      }
-    );
+  const { data: response } = await axios.get(
+    `${process.env.REACT_APP_API_URL}/attendances/user`,
+    {
+      params: {
+        order: data.order,
+      },
+      headers: {
+        Authorization: `Bearer ${data.token}`,
+      },
+    }
+  );
 
-    return response.data;
-  }
+  return response.data;
 };
 
 const getAttendsByParams = async (attendecesByDays: AttendancesDay) => {
@@ -166,6 +123,7 @@ const getAttendsByParams = async (attendecesByDays: AttendancesDay) => {
         params: {
           date: dates,
           office: office,
+          status: "approved",
         },
         headers: {
           Authorization: `Bearer ${token}`,
@@ -192,26 +150,28 @@ const getCalendar = async (category: LocationState | undefined) => {
 
 const ModalRequest = ({ opened, setOpened, days }: ModalProps) => {
   const queryClient = useQueryClient();
+  const notifications = useNotifications();
   const { state } = useContext(AuthContext);
-  const { token } = state;
-  const { isLoading, data } = useQuery("getProfile", () => fetchProfile(token));
-  const [isSuccess, setIsSuccess] = useState<boolean>(false);
-  const [isError, setIsError] = useState<boolean>(false);
+  const { token, profile } = state;
   const mutation = useMutation(postDate, {
     onSettled: (data: any) => {
       if (data.status === 200) {
-        setIsSuccess(true);
+        notifications.showNotification({
+          title: "Success",
+          message: `${data.data.meta.message}`,
+        });
         setTimeout(() => {
           setOpened(false);
-          setIsSuccess(false);
         }, 2000);
         queryClient.invalidateQueries("allAttendence");
         queryClient.invalidateQueries("attendsByDay");
       } else {
-        setIsError(true);
-        setTimeout(() => {
-          setIsError(false);
-        }, 2000);
+        notifications.showNotification({
+          title: "Failed",
+          color: "red",
+          message: `${data}`,
+          icon: <XCircle className="text-white" size={32} />,
+        });
       }
     },
   });
@@ -223,9 +183,6 @@ const ModalRequest = ({ opened, setOpened, days }: ModalProps) => {
     await mutation.mutate(data);
   };
   const date = days && moment(days.date).format("LL");
-  if (isLoading) {
-    <LoadingOverlay visible={true} />;
-  }
 
   return (
     <>
@@ -243,21 +200,6 @@ const ModalRequest = ({ opened, setOpened, days }: ModalProps) => {
           modal: { padding: 0 },
         }}
       >
-        {isLoading && <LoadingOverlay visible={true} />}
-        {isSuccess && (
-          <div className="mx-4 my-2">
-            <Alert title="Success!" color="blue">
-              WFO request successful!
-            </Alert>
-          </div>
-        )}
-        {isError && (
-          <div className="mx-4 my-2">
-            <Alert title="Failed!" color="red">
-              The WFO request has passed or has been registered on the same day!
-            </Alert>
-          </div>
-        )}
         <div className="bg-blue-100 px-4 w-full flex flex-row justify-between py-4">
           <div className="w-1/2">
             <h2 className="text-gray-500 text-sm">Date</h2>
@@ -271,11 +213,11 @@ const ModalRequest = ({ opened, setOpened, days }: ModalProps) => {
         <div className="px-4 flex flex-row justify-between py-3">
           <div className="w-1/2">
             <h2 className="text-gray-500 text-sm">Applicant</h2>
-            <p>{data.name}</p>
+            <p>{profile?.name}</p>
           </div>
           <div className="w-1/2">
             <h2 className="text-gray-500 text-sm">NIK</h2>
-            <p>{data.nik}</p>
+            <p>{profile?.nik}</p>
           </div>
         </div>
 
@@ -289,7 +231,6 @@ const ModalRequest = ({ opened, setOpened, days }: ModalProps) => {
           <button
             className="flex flex-row items-center bg-gray-700 text-white py-2 px-4 rounded"
             onClick={handleRequestAttends}
-            disabled={isSuccess}
           >
             Send Request WFO
           </button>
@@ -365,15 +306,16 @@ const ListAttendances = ({ attends }: ListProps) => {
 const DashboardEmployeeSchedule = () => {
   const { state } = useContext(AuthContext);
   const { token } = state;
+
   const [isLocation, setIsLocation] = useState<LocationState[]>([]);
   const [filteredCategory, setFilteredCategory] = useState<LocationState>();
 
-  const [isDays, setIsDays] = useState<AttendancesState>();
+  const [isDays, setIsDays] = useState<AttendancesDay>();
 
   const [opened, setOpened] = useState<boolean>(false);
   // Pagination
   const tablePerPage = 3;
-  const [isAttendences, setIsAttendences] = useState<AttendsProps[]>();
+  const [isAttendences, setIsAttendences] = useState<AttendancesProps[]>();
   const [activePage, setPage] = useState<number>(1);
   const [totalPage, setTotalPage] = useState<number>(1);
 
@@ -457,7 +399,7 @@ const DashboardEmployeeSchedule = () => {
   const handleChangeCalendar = (e: Date) => {
     if (dataCalendar) {
       const filteredCalendars = dataCalendar.filter(
-        (calender: AttendancesState) =>
+        (calender: CalendarType) =>
           changeToDate(calender.date) === changeToDate(e)
       );
 
@@ -506,7 +448,7 @@ const DashboardEmployeeSchedule = () => {
         </div>
         <div className="flex flex-col justify-between h-screen">
           <div className="flex flex-col my-2">
-            {isAttendences?.map((data: AttendsProps, i: number) => (
+            {isAttendences?.map((data: AttendancesProps, i: number) => (
               <CardListRequest attends={data} key={i} />
             ))}
           </div>
@@ -521,7 +463,7 @@ const DashboardEmployeeSchedule = () => {
           </div>
         </div>
       </div>
-      <div className="mx-6">
+      <div className="lg:mx-6 mx-auto">
         <DateComponent
           data={dataCalendar}
           onHandle={handleChangeCalendar}
@@ -563,7 +505,7 @@ const DashboardEmployeeSchedule = () => {
               />
             )}
             {!dataAttendensByDay && <p>No one</p>}
-            {dataAttendensByDay?.map((attends: AttendsProps, i: number) => (
+            {dataAttendensByDay?.map((attends: AttendancesProps, i: number) => (
               <ListAttendances attends={attends} key={i} />
             ))}
           </ScrollArea>

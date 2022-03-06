@@ -7,8 +7,15 @@ import {
   Button,
   Alert,
 } from "@mantine/core";
+import { useNotifications } from "@mantine/notifications";
 import axios, { AxiosError, AxiosResponse } from "axios";
-import { Check, SortAscending, SortDescending, X } from "phosphor-react";
+import {
+  Check,
+  SortAscending,
+  SortDescending,
+  X,
+  XCircle,
+} from "phosphor-react";
 import { useContext, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import { AuthContext } from "../../../context/AuthContext";
@@ -60,33 +67,38 @@ const putCertificate = async (data: PutType) => {
       return response;
     })
     .catch((error: AxiosError) => {
-      return error.message;
+      return error.response?.data?.meta.message;
     });
 
   return response;
 };
 const ModalCertificate = ({ opened, setOpened, certificate }: ModalProps) => {
   const queryClient = useQueryClient();
+  const notifications = useNotifications();
   const { user, image, dosage, id } = certificate;
   const { state } = useContext(AuthContext);
   const { token } = state;
   const [value, setValue] = useState("approved");
-  const [isSuccess, setIsSucces] = useState<boolean>(false);
-  const [isError, setIsError] = useState<boolean>(false);
+
   const mutation = useMutation(putCertificate, {
     onSettled: async (data: any) => {
       if (data.status === 200) {
-        setIsSucces(true);
+        notifications.showNotification({
+          title: "Success",
+          message: `${data.data.meta.message}`,
+          icon: <Check className="text-white" size={32} />,
+        });
         setTimeout(() => {
-          setIsSucces(false);
           setOpened(false);
         }, 2000);
         queryClient.invalidateQueries(["getAllCertificate", data.id]);
       } else {
-        setIsError(true);
-        setTimeout(() => {
-          setIsError(false);
-        }, 2000);
+        notifications.showNotification({
+          title: "Failed",
+          color: "red",
+          message: `${data}`,
+          icon: <XCircle className="text-white" size={32} />,
+        });
       }
     },
   });
@@ -108,22 +120,11 @@ const ModalCertificate = ({ opened, setOpened, certificate }: ModalProps) => {
         modal: { padding: 0 },
       }}
     >
-      {isSuccess && (
-        <div className="my-2">
-          <Alert title="Success!" color="blue">
-            Update certificate status successfully...
-          </Alert>
-        </div>
-      )}
-      {isError && (
-        <div className="my-2">
-          <Alert title="Failed:(" color="red">
-            Updating certificate status failed...
-          </Alert>
-        </div>
-      )}
-      <div className="bg-blue-100 px-4 w-full flex flex-row justify-between py-4">
+      <div className="bg-blue-100 px-4 w-full flex flex-col justify-between py-4">
         <h1>Certificate vaccine: {dosage}</h1>
+        <p className="text-sm text-red-600">
+          * Changing status can only be once
+        </p>
       </div>
       <div className="mx-4 py-2">
         <img
@@ -273,11 +274,10 @@ const DashboardAdminVaccine = () => {
       refetch();
     }, 300);
   };
-  if (isLoading) {
-    <LoadingOverlay visible={isLoading} />;
-  }
+
   return (
     <>
+      {isLoading && <LoadingOverlay visible={true} />}
       <h1 className="font-fraunces text-2xl">Vaccine Certificate</h1>
       <div>
         <div className="flex justify-end py-2">
@@ -309,10 +309,9 @@ const DashboardAdminVaccine = () => {
               </tr>
             </thead>
             <tbody>
-              {data &&
-                data.map((certificate: UserCertificate, i: number) => (
-                  <TableAdminVaccine certificate={certificate} key={i} />
-                ))}
+              {data?.map((certificate: UserCertificate, i: number) => (
+                <TableAdminVaccine certificate={certificate} key={i} />
+              ))}
             </tbody>
           </Table>
         </div>

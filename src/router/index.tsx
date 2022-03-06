@@ -11,60 +11,57 @@ import DashboardEmployeeSchedule from "../pages/dashboard-employee/schedule";
 import Login from "../pages/login";
 import ProfileSetting from "../pages/profile/setting";
 import NotFound from "../pages/404";
-import AddEmployee from "../pages/dashboard-employee/addemployee";
+import AddEmployee from "../pages/dashboard-admin/addemployee";
 
 const Router = () => {
-	const { state } = useContext(AuthContext);
-	const { role, isLogged } = state;
-	const isAdmin = role?.toLowerCase() === "admin";
+  const { state } = useContext(AuthContext);
+  const { role, isLogged } = state;
+  const isAdmin = role?.toLowerCase() === "admin";
 
-	return (
-		<BrowserRouter>
-			<Routes>
-				{!isLogged && <Route path="/" element={<Login />} />}
-				<Route path="/" element={<Layout />}>
-					{isLogged && (
-						<>
-							<Route path="/" element={<DashboardEmployee />} />
-							<Route
-								path="/dashboard-employee/schedule"
-								element={<DashboardEmployeeSchedule />}
-							/>
-							<Route
-								path="/dashboard-employee/vaccine"
-								element={<DashboardEmployeeVaccine />}
-							/>
-							<Route
-								path="/profile/setting"
-								element={<ProfileSetting />}
-							/>
-						</>
-					)}
-					{isLogged && isAdmin && (
-						<>
-							<Route
-								path="/dashboard-admin/vaccine"
-								element={<DashboardAdminVaccine />}
-							/>
-							<Route
-								path="/dashboard-admin/wfo-request"
-								element={<DashboardAdminRequest />}
-							/>
-							<Route
-								path="/dashboard-admin/quota-schedule"
-								element={<DashboardAdmin />}
-							/>
-							<Route
-								path="/dashboard-admin/add-employee"
-								element={<AddEmployee />}
-							/>
-						</>
-					)}
-				</Route>
-				<Route path="*" element={<NotFound />} />
-			</Routes>
-		</BrowserRouter>
-	);
+  return (
+    <BrowserRouter>
+      <Routes>
+        {!isLogged && <Route path="/" element={<Login />} />}
+        <Route path="/" element={<Layout />}>
+          {isLogged && (
+            <>
+              <Route path="/" element={<DashboardEmployee />} />
+              <Route
+                path="/dashboard-employee/schedule"
+                element={<DashboardEmployeeSchedule />}
+              />
+              <Route
+                path="/dashboard-employee/vaccine"
+                element={<DashboardEmployeeVaccine />}
+              />
+              <Route path="/profile/setting" element={<ProfileSetting />} />
+            </>
+          )}
+          {isLogged && isAdmin && (
+            <>
+              <Route
+                path="/dashboard-admin/vaccine"
+                element={<DashboardAdminVaccine />}
+              />
+              <Route
+                path="/dashboard-admin/wfo-request"
+                element={<DashboardAdminRequest />}
+              />
+              <Route
+                path="/dashboard-admin/quota-schedule"
+                element={<DashboardAdmin />}
+              />
+              <Route
+                path="/dashboard-admin/add-employee"
+                element={<AddEmployee />}
+              />
+            </>
+          )}
+        </Route>
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </BrowserRouter>
+  );
 };
 
 export default Router;

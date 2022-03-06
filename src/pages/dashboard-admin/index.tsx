@@ -6,8 +6,10 @@ import moment from "moment";
 import { CalendarTypeProps } from "../../types/type";
 import DateComponent from "../../components/Calendar";
 import { changeToDate } from "../../utils/formatDateMoment";
-import { Button, Input, Select, Modal, Alert } from "@mantine/core";
+import { Button, Input, Select, Modal } from "@mantine/core";
 import { AuthContext } from "../../context/AuthContext";
+import { useNotifications } from "@mantine/notifications";
+import { Check, XCircle } from "phosphor-react";
 
 type LocationState = {
   id: string;
@@ -23,7 +25,6 @@ type ModalUpdate = {
   setIsOpen: (arg: boolean) => void;
   filteredCalendar: CalendarTypeProps | undefined;
   updateQuota: (arg: number) => void;
-  isError: boolean;
 };
 
 const fetchCategory = async () => {
@@ -62,7 +63,7 @@ const putQuota = async (dayUpdate: PutQuota) => {
       return response;
     })
     .catch((error: AxiosError) => {
-      return error.message;
+      return error.response?.data?.meta.message;
     });
 
   return response;
@@ -73,7 +74,6 @@ const ModalUpdateQuota = ({
   setIsOpen,
   filteredCalendar,
   updateQuota,
-  isError,
 }: ModalUpdate) => {
   const [isQuota, setIsQuota] = useState<number>(0);
   const date = moment(filteredCalendar?.date).format("DD MMMM YYYY");
@@ -96,13 +96,6 @@ const ModalUpdateQuota = ({
         {filteredCalendar && (
           <>
             <div className="bg-blue-100 w-full flex flex-col justify-between py-4">
-              {isError && (
-                <div className="my-2">
-                  <Alert title="Failed :(" color="red">
-                    Something wrong...
-                  </Alert>
-                </div>
-              )}
               <div className="mx-4 flex flex-row">
                 <div className="w-1/2">
                   <label className="text-sm">Date</label>
@@ -143,6 +136,7 @@ const ModalUpdateQuota = ({
 
 const DashboardAdmin = () => {
   const queryClient = useQueryClient();
+  const notifications = useNotifications();
   const [filteredCategory, setFilteredCategory] = useState<
     LocationState | undefined
   >();
@@ -151,8 +145,7 @@ const DashboardAdmin = () => {
   >();
   const [isLocation, setIsLocation] = useState<LocationState[]>([]);
   const [isOpen, setIsOpen] = useState<boolean>(false);
-  const [isSucces, setIsSucces] = useState<boolean>(false);
-  const [isError, setIsError] = useState<boolean>(false);
+
   // Responsive Calendar
   const isDekstop = useMediaQuery("(min-width: 1200px)");
   const isTablet = useMediaQuery("(max-width: 1200px)");
@@ -165,17 +158,19 @@ const DashboardAdmin = () => {
     onSettled: (data: any) => {
       if (data.status === 200) {
         setIsOpen(false);
-        setIsError(false);
-        setIsSucces(true);
-        setTimeout(() => {
-          setIsSucces(false);
-        }, 1500);
+        notifications.showNotification({
+          title: "Success",
+          message: `${data.data.meta.message}`,
+          icon: <Check className="text-white" size={32} />,
+        });
         queryClient.invalidateQueries(["getDataCalendar"]);
       } else {
-        setIsError(true);
-        setTimeout(() => {
-          setIsError(false);
-        }, 1000);
+        notifications.showNotification({
+          title: "Failed",
+          color: "red",
+          message: `${data}`,
+          icon: <XCircle className="text-white" size={32} />,
+        });
       }
     },
   });
@@ -247,7 +242,6 @@ const DashboardAdmin = () => {
         setIsOpen={setIsOpen}
         filteredCalendar={filteredCalendar}
         updateQuota={updateQuota}
-        isError={isError}
       />
       <div className="lg:w-1/3 my-2">
         <h1 className="font-semibold">Office</h1>
@@ -260,13 +254,6 @@ const DashboardAdmin = () => {
           />
         )}
       </div>
-      {isSucces && (
-        <div className="my-2">
-          <Alert title="Success!" color="blue">
-            Your update Quota succesfully...
-          </Alert>
-        </div>
-      )}
 
       <div className="flex justify-center py-8">
         <DateComponent
