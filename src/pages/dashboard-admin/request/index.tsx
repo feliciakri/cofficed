@@ -45,6 +45,12 @@ type ApprovedPost = {
   status: string;
   notes?: string;
 };
+
+const fetchCategory = async () => {
+  const { data } = await axios.get(`${process.env.REACT_APP_API_URL}/offices/`);
+  return data.data;
+};
+
 const postStatusAttends = async (approved: ApprovedPost) => {
   const { token, id, status, notes } = approved;
 
@@ -308,42 +314,26 @@ const TableAdmin = ({ attends }: PropsTable) => {
 type AttendProps = {
   token: string | null;
   status: string | undefined;
-  order: string;
+  order_by: string;
   date?: [Date | null, Date | null];
-  office?: string;
+  office_id: string | undefined;
 };
-const getAllAttends = async (attend: AttendProps) => {
+
+const getAttendances = async (attend: AttendProps) => {
   if (attend.token) {
+    const { status, order_by, office_id, date } = attend;
+    const date_start = date ? moment(date[0]).format("YYYY-MM-DD") : "";
+    const date_end = date ? moment(date[1]).format("YYYY-MM-DD") : "";
+
     const data = await axios.get(
       `${process.env.REACT_APP_API_URL}/attendances/`,
       {
         params: {
-          status: attend.status || "",
-          order: attend.order || "",
-          office: attend.office,
-        },
-        headers: {
-          Authorization: `Bearer ${attend.token}`,
-        },
-      }
-    );
-    return data;
-  }
-};
-const getAttendsByRange = async (attend: AttendProps) => {
-  if (attend.token && attend.date) {
-    const date_start = moment(attend.date[0]).format("YYYY-MM-DD");
-    const date_end = moment(attend.date[1]).format("YYYY-MM-DD");
-
-    const data = await axios.get(
-      `${process.env.REACT_APP_API_URL}/attendances/rangedate`,
-      {
-        params: {
           date_start: date_start,
           date_end: date_end,
-          status: attend.status || "",
-          order: attend.order || "",
-          office: attend.office,
+          status: status,
+          order_by: order_by,
+          office_id: office_id,
         },
         headers: {
           Authorization: `Bearer ${attend.token}`,
@@ -356,6 +346,7 @@ const getAttendsByRange = async (attend: AttendProps) => {
 const DashboardAdminRequest = () => {
   const { state } = useContext(AuthContext);
   const { token } = state;
+
   const [isAttendences, setIsAttendences] = useState<AttendancesProps[]>();
   const [activePage, setPage] = useState<number>(1);
   const [totalPage, setTotalPage] = useState<number>(1);
@@ -369,42 +360,32 @@ const DashboardAdminRequest = () => {
   >();
 
   const [filteredByOrder, setFilteredByOrder] = useState<boolean>(false);
+  const { data: dataCategory } = useQuery("getCategory", fetchCategory);
+  const dataLocation =
+    dataCategory?.map((location: any) => ({
+      value: `${location.id}`,
+      label: `${location.name}`,
+    })) || [];
+
   const { isLoading, data, refetch, isFetching } = useQuery(
     "allAttendence",
     () =>
-      getAllAttends({
+      getAttendances({
         token: token,
         status:
-          filteredByStatus === "head_office" || filteredByStatus === "storage"
-            ? ""
-            : filteredByStatus,
-        order: filteredByOrder ? "asc" : "desc",
-        office:
-          filteredByStatus === "head_office"
-            ? "head office"
-            : filteredByStatus === "storage"
-            ? "storage"
+          filteredByStatus === "approved" ||
+          filteredByStatus === "pending" ||
+          filteredByStatus === "rejected"
+            ? filteredByStatus
             : "",
-      })
-  );
-
-  const { data: attendecesRange, refetch: refetchRange } = useQuery(
-    "attendenceByRange",
-    () =>
-      getAttendsByRange({
-        token: token,
-        status:
-          filteredByStatus === "head_office" || filteredByStatus === "storage"
+        order_by: filteredByOrder ? "asc" : "desc",
+        office_id:
+          filteredByStatus === "approved" ||
+          filteredByStatus === "pending" ||
+          filteredByStatus === "rejected"
             ? ""
             : filteredByStatus,
-        order: filteredByOrder ? "asc" : "desc",
         date: isRange,
-        office:
-          filteredByStatus === "head_office"
-            ? "head office"
-            : filteredByStatus === "storage"
-            ? "storage"
-            : "",
       })
   );
 
@@ -412,9 +393,7 @@ const DashboardAdminRequest = () => {
     if (data) {
       setIsEmployee(data.data.data);
     }
-    if (attendecesRange) {
-      setIsEmployee(attendecesRange?.data.data);
-    }
+
     if (isEmployee) {
       const num = Math.ceil(isEmployee.length / tablePerPage);
       setTotalPage(num);
@@ -424,34 +403,26 @@ const DashboardAdminRequest = () => {
       );
       setIsAttendences(dataAttends);
     }
-  }, [data, activePage, isEmployee, attendecesRange]);
+  }, [data, activePage, isEmployee]);
 
   const handleChange = (e: string) => {
     setFilteredByStatus(e);
     setTimeout(() => {
-      if (attendecesRange) {
-        refetchRange();
-      } else {
-        refetch();
-      }
+      refetch();
     }, 300);
   };
 
   const handleFilterBySort = () => {
     setFilteredByOrder(!filteredByOrder);
     setTimeout(() => {
-      if (attendecesRange) {
-        refetchRange();
-      } else {
-        refetch();
-      }
+      refetch();
     }, 300);
   };
   const handleRange = (dateRange: [Date | null, Date | null]) => {
     setIsRange(dateRange);
     if (dateRange[1]) {
       setTimeout(() => {
-        refetchRange();
+        refetch();
       }, 200);
     }
   };
@@ -478,8 +449,7 @@ const DashboardAdminRequest = () => {
                 { value: "approved", label: "Approved" },
                 { value: "rejected", label: "Rejected" },
                 { value: "pending", label: "Pending" },
-                { value: "head_office", label: "Head Office" },
-                { value: "storage", label: "Storage" },
+                ...dataLocation,
               ]}
             />
             <div>

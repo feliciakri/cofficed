@@ -33,6 +33,10 @@ type LocationState = {
   id: string;
   name: string;
 };
+type CategoryState = {
+  label: string;
+  value: string;
+};
 type ListProps = {
   attends: AttendancesProps;
 };
@@ -62,7 +66,7 @@ const postDate = async (data: PostType) => {
   const response = await axios
     .post(
       `${process.env.REACT_APP_API_URL}/attendances/`,
-      { day: id },
+      { day_id: id },
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -101,7 +105,7 @@ const getAttendancesByUser = async (data: AttendancesUser) => {
     `${process.env.REACT_APP_API_URL}/attendances/user`,
     {
       params: {
-        order: data.order,
+        order_by: data.order,
       },
       headers: {
         Authorization: `Bearer ${data.token}`,
@@ -113,7 +117,7 @@ const getAttendancesByUser = async (data: AttendancesUser) => {
 };
 
 const getAttendsByParams = async (attendecesByDays: AttendancesDay) => {
-  const { token, date, office } = attendecesByDays;
+  const { token, date, office, value } = attendecesByDays;
 
   if (token && date && office) {
     const dates = moment(date).format("YYYY-MM-DD");
@@ -121,8 +125,9 @@ const getAttendsByParams = async (attendecesByDays: AttendancesDay) => {
       `${process.env.REACT_APP_API_URL}/attendances/`,
       {
         params: {
-          date: dates,
-          office: office,
+          date_start: dates,
+          date_end: dates,
+          office_id: value,
           status: "approved",
         },
         headers: {
@@ -134,13 +139,13 @@ const getAttendsByParams = async (attendecesByDays: AttendancesDay) => {
     return response.data;
   }
 };
-const getCalendar = async (category: LocationState | undefined) => {
+const getCalendar = async (category: CategoryState | undefined) => {
   if (category) {
     const { data: response } = await axios.get(
       `${process.env.REACT_APP_API_URL}/days/`,
       {
         params: {
-          office_id: category.id,
+          office_id: category.value,
         },
       }
     );
@@ -300,7 +305,7 @@ const DashboardEmployeeSchedule = () => {
   const { token } = state;
 
   const [isLocation, setIsLocation] = useState<LocationState[]>([]);
-  const [filteredCategory, setFilteredCategory] = useState<LocationState>();
+  const [filteredCategory, setFilteredCategory] = useState<CategoryState>();
 
   const [isDays, setIsDays] = useState<AttendancesDay>();
 
@@ -366,8 +371,8 @@ const DashboardEmployeeSchedule = () => {
 
       setIsAttendences(dataAttends);
       setFilteredCategory({
-        name: isLocation[0].name,
-        id: isLocation[0].id,
+        label: isLocation[0].name,
+        value: isLocation[0].id,
       });
     }
     if (data) {
@@ -380,8 +385,8 @@ const DashboardEmployeeSchedule = () => {
       (location: LocationState) => location.id === e
     );
     setFilteredCategory({
-      name: category[0].name,
-      id: category[0].id,
+      label: category[0].name,
+      value: category[0].id,
     });
     setTimeout(() => {
       refetch();
@@ -396,13 +401,14 @@ const DashboardEmployeeSchedule = () => {
       );
 
       if (filteredCalendars.length > 0) {
-        setIsDays({ ...filteredCalendars[0] });
+        setIsDays({ ...filteredCalendars[0], ...filteredCategory });
         setTimeout(() => {
           refetchAttends();
         }, 400);
       }
     }
   };
+
   const [filteredByOrder, setFilteredByOrder] = useState<boolean>(false);
   const handleFilterBySort = () => {
     setFilteredByOrder(!filteredByOrder);
@@ -410,6 +416,7 @@ const DashboardEmployeeSchedule = () => {
       refetchAttendanceUser();
     }, 300);
   };
+
   return (
     <div className="flex flex-col lg:flex-row">
       {isDays && (

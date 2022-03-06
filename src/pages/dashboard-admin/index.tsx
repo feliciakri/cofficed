@@ -50,7 +50,7 @@ const getCalendar = async (category: LocationState | undefined) => {
 const putQuota = async (dayUpdate: PutQuota) => {
   const { token, id, quota } = dayUpdate;
   const response = await axios
-    .post(
+    .put(
       `${process.env.REACT_APP_API_URL}/days/`,
       { id: id, quota: quota },
       {

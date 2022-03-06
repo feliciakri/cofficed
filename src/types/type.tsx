@@ -34,4 +34,6 @@ export type AttendancesDay = {
   quota?: number;
   date?: string | Date;
   token?: string | null;
+  value?: string | null;
+  label?: string | null;
 };

@@ -5,7 +5,6 @@ import {
   Radio,
   Table,
   Button,
-
 } from "@mantine/core";
 import { useNotifications } from "@mantine/notifications";
 import axios, { AxiosError, AxiosResponse } from "axios";
@@ -55,8 +54,8 @@ const putCertificate = async (data: PutType) => {
   const { token, status, id } = data;
   const response = await axios
     .put(
-      `${process.env.REACT_APP_API_URL}/certificates/${id}`,
-      { status: status },
+      `${process.env.REACT_APP_API_URL}/certificates/`,
+      { id: id, status: status },
       {
         headers: {
           Authorization: `Bearer ${token}`,

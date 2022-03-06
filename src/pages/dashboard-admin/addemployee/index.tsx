@@ -39,8 +39,14 @@ export default function AddEmployee() {
     formState: { errors },
   } = useForm<InputAddEmployee>();
   const onSubmit: SubmitHandler<InputAddEmployee> = (data) => {
+    const userData = {
+      ...data,
+    };
+
+    // office id
+
     axios
-      .post(`${process.env.REACT_APP_API_URL}/users/register`, data)
+      .post(`${process.env.REACT_APP_API_URL}/users/`, userData)
       .then((res) => {
         notifications.showNotification({
           title: "Success",
