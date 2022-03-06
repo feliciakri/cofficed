@@ -214,7 +214,7 @@ const DashboardAdmin = () => {
     });
     setTimeout(() => {
       refetch();
-    }, 300);
+    }, 200);
   };
   const handleChangeCalendar = (e: Date) => {
     if (dataCalendar) {

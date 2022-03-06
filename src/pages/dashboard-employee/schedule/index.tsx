@@ -170,7 +170,7 @@ const ModalRequest = ({ opened, setOpened, days }: ModalProps) => {
         setTimeout(() => {
           setOpened(false);
         }, 2000);
-        queryClient.invalidateQueries("allAttendence");
+        queryClient.invalidateQueries("attendanceByUser");
         queryClient.invalidateQueries("attendsByDay");
       } else {
         notifications.showNotification({
@@ -448,6 +448,7 @@ const DashboardEmployeeSchedule = () => {
         </div>
         <div className="flex flex-col justify-between h-screen">
           <div className="flex flex-col my-2">
+            {!isAttendences && <DefaultEmptyState />}
             {isAttendences?.map((data: AttendancesProps, i: number) => (
               <CardListRequest attends={data} key={i} />
             ))}
