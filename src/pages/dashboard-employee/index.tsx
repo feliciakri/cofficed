@@ -1,8 +1,8 @@
 import { Alert, Button, Group, Input } from "@mantine/core";
 import { useNotifications } from "@mantine/notifications";
-import axios from "axios";
+import axios, { AxiosError, AxiosResponse } from "axios";
 import moment from "moment";
-import { Bus, HourglassMedium, SunDim, XCircle } from "phosphor-react";
+import { Bus, Check, HourglassMedium, SunDim, XCircle } from "phosphor-react";
 import { useContext, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import { AuthContext } from "../../context/AuthContext";
@@ -37,19 +37,26 @@ const fetchCheckIn = async (token: string | null) => {
 
 const postCheckIn = async ({ token, attendance_id, temperature }: any) => {
   if (token) {
-    const { data: response } = await axios.post(
-      `${process.env.REACT_APP_API_URL}/check/ins`,
-      {
-        attendance_id: attendance_id,
-        temperature: +temperature,
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
+    const response = await axios
+      .post(
+        `${process.env.REACT_APP_API_URL}/check/ins`,
+        {
+          attendance_id: attendance_id,
+          temperature: +temperature,
         },
-      }
-    );
-    return response.data;
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      )
+      .then((response: AxiosResponse) => {
+        return response;
+      })
+      .catch((error: AxiosError) => {
+        return error.message;
+      });
+    return response;
   }
 };
 
@@ -166,20 +173,26 @@ const DashboardEmployee = () => {
   );
 
   const mutation = useMutation(postCheckIn, {
-    onSuccess: async () => {
-      queryClient.invalidateQueries("getCheckIn");
-      setIsSucces(true);
-      setTimeout(() => {
-        setIsSucces(false);
-      }, 2000);
-    },
-    onError: async (data) => {
-      notifications.showNotification({
-        title: "Failed",
-        color: "red",
-        message: `${data}`,
-        icon: <XCircle className="text-white" size={32} />,
-      });
+    onSettled: async (data: any) => {
+      if (data.status === 200) {
+        queryClient.invalidateQueries("getCheckIn");
+        setIsSucces(true);
+        setTimeout(() => {
+          setIsSucces(false);
+        }, 2000);
+        notifications.showNotification({
+          title: "Success",
+          message: "Login Success!",
+          icon: <Check className="text-white" size={32} />,
+        });
+      } else {
+        notifications.showNotification({
+          title: "Failed",
+          color: "red",
+          message: `${data}`,
+          icon: <XCircle className="text-white" size={32} />,
+        });
+      }
     },
   });
 

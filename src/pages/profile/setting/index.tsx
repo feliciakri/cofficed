@@ -2,7 +2,6 @@ import {
   LoadingOverlay,
   Button,
   Modal,
-  Alert,
   Group,
   Text,
   PasswordInput,
@@ -17,6 +16,7 @@ import { useMutation, useQueryClient } from "react-query";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { AuthActionKind } from "../../../context/AuthReducer";
 import { useNotifications } from "@mantine/notifications";
+import { Check, XCircle } from "phosphor-react";
 
 type ModalProps = {
   isOpened: boolean;
@@ -27,10 +27,6 @@ type PasswordModalProps = {
   isOpened: boolean;
   setIsOpened: (arg: boolean) => void;
   datap: any;
-};
-
-type InputImage = {
-  image: string;
 };
 
 type InputPassword = {
@@ -57,6 +53,25 @@ const postAvatar = async (data: any) => {
     return response;
   }
 };
+const putPassword = async (data: any) => {
+  if (data) {
+    const { token, dataInput } = data;
+    const response = axios
+      .put(`${process.env.REACT_APP_API_URL}/users/`, dataInput, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      .then((response: AxiosResponse) => {
+        return response;
+      })
+      .catch((error: AxiosError) => {
+        return error.message;
+      });
+
+    return response;
+  }
+};
 
 const ModalAvatar = ({ isOpened, setIsOpened }: ModalProps) => {
   const { state } = useContext(AuthContext);
@@ -65,7 +80,6 @@ const ModalAvatar = ({ isOpened, setIsOpened }: ModalProps) => {
   const notifications = useNotifications();
   const queryClient = useQueryClient();
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const { register, handleSubmit } = useForm<InputImage>();
 
   const mutation = useMutation(postAvatar, {
     onMutate: async () => {
@@ -77,13 +91,19 @@ const ModalAvatar = ({ isOpened, setIsOpened }: ModalProps) => {
         setIsLoading(false);
         notifications.showNotification({
           title: "Success",
-          message: "Change avatas succesfully",
+          message: "Change avatar is Succesfully",
+          icon: <Check className="text-white" size={32} />,
         });
         setTimeout(() => {
           setIsOpened(false);
         }, 500);
       } else {
-        setIsLoading(false);
+        notifications.showNotification({
+          title: "Failed",
+          color: "red",
+          message: `${data}`,
+          icon: <XCircle className="text-white" size={32} />,
+        });
       }
     },
   });
@@ -117,9 +137,6 @@ const ModalAvatar = ({ isOpened, setIsOpened }: ModalProps) => {
           onReject={(files) => console.log("rejected files", files)}
           accept={[MIME_TYPES.png, MIME_TYPES.jpeg, MIME_TYPES.svg]}
           maxSize={3 * 1024 ** 2}
-          {...register("image", {
-            required: true,
-          })}
         >
           {(status) => (
             <Group
@@ -160,54 +177,51 @@ const ModalPassword = ({
 }: PasswordModalProps) => {
   const { state } = useContext(AuthContext);
   const { token } = state;
-  const [isSuccess, setIsSuccess] = useState<boolean>(false);
-  const [isFailed, setIsFailed] = useState<boolean>(false);
+  const mutation = useMutation(putPassword, {
+    onSettled: (data: any) => {
+      if (data.status === 200) {
+        setIsOpened(false);
+        setIsLoading(false);
+        notifications.showNotification({
+          title: "Success",
+          message: `${data.data.meta.message}`,
+          icon: <Check className="text-white" size={32} />,
+        });
+      } else {
+        setIsLoading(false);
+        notifications.showNotification({
+          title: "Failed",
+          color: "red",
+          message: `${data}`,
+          icon: <XCircle className="text-white" size={32} />,
+        });
+      }
+    },
+  });
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const { register, handleSubmit } = useForm<InputPassword>();
+  const { handleSubmit } = useForm<InputPassword>();
   const [value, setValue] = useState("");
-
+  const notifications = useNotifications();
   const onSubmit: SubmitHandler<InputPassword> = async (data) => {
-    const dataInput = {
+    const dataUser = {
       nik: datap.nik,
       email: datap.email,
       name: datap.name,
       phone: datap.phone,
       password: value,
     };
-    await axios
-      .put(`${process.env.REACT_APP_API_URL}/users/`, dataInput, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      })
-      .then((res) => {
-        setIsSuccess(true);
-        setTimeout(() => {
-          setIsSuccess(false);
-        }, 2000);
-      })
-      .catch((err) => {
-        setIsFailed(true);
-        setTimeout(() => {
-          setIsFailed(false);
-        }, 2000);
-      });
+    const dataInput = {
+      token: token,
+      dataInput: dataUser,
+    };
+    await mutation.mutate(dataInput);
   };
 
   return (
     <Modal opened={isOpened} onClose={() => setIsOpened(false)} centered>
       {isLoading && <LoadingOverlay visible={isLoading} />}
       <h1 className="text-center font-fraunces text-lg">Change Password</h1>
-      {isSuccess && (
-        <Alert title="Success!" color="Blue">
-          Your password has been changed!
-        </Alert>
-      )}
-      {isFailed && (
-        <Alert title="Failed :(" color="red">
-          Password change failed
-        </Alert>
-      )}
+
       <form onSubmit={handleSubmit(onSubmit)} className="my-2">
         <PasswordInput
           placeholder="Password"

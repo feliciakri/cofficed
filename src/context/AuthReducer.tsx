@@ -26,7 +26,7 @@ const AuthReducer = (state: any, action: ActionProps) => {
         token: state.token,
         role: state.role,
         profile: { ...payload.profile },
-        isLogged: true,
+        isLogged: state.isLogged,
       };
     }
     case AuthActionKind.LOGIN_FAILED: {

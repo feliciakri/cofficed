@@ -39,7 +39,13 @@ type ModalRequestProps = {
   isOpen: boolean;
   setIsOpen: (arg: boolean) => void;
 };
-const postStatusAttends = async (approved: any) => {
+type ApprovedPost = {
+  id: string;
+  token: string | null;
+  status: string;
+  notes?: string;
+};
+const postStatusAttends = async (approved: ApprovedPost) => {
   const { token, id, status, notes } = approved;
 
   const response = await axios
@@ -229,6 +235,7 @@ const TableAdmin = ({ attends }: PropsTable) => {
       });
     },
   });
+
   const handleStatus = async (e: string) => {
     const approved = {
       id: id,

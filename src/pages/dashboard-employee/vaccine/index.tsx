@@ -10,7 +10,7 @@ import {
   LoadingOverlay,
 } from "@mantine/core";
 import { Dropzone, MIME_TYPES } from "@mantine/dropzone";
-import { Spinner, Upload, X, XCircle } from "phosphor-react";
+import { Check, Spinner, Upload, X, XCircle } from "phosphor-react";
 import { AuthContext } from "../../../context/AuthContext";
 import { useNotifications } from "@mantine/notifications";
 type CertificateProps = {
@@ -60,6 +60,7 @@ const ModalVaccine = ({ isOpened, setIsOpened }: ModalVaccineProps) => {
         notifications.showNotification({
           title: "Success",
           message: "Upload Certificate Vaccine is successfully",
+          icon: <Check className="text-white" size={32} />,
         });
         setIsLoading(false);
         setTimeout(() => {

@@ -28,7 +28,7 @@ export const AuthContext = React.createContext<{
   state: initialState,
   dispatch: () => null,
 });
-const fetchProfile = async (token: string | null) => {
+const fetchProfile = async (token: any) => {
   if (token) {
     const { data: response } = await axios.get(
       `${process.env.REACT_APP_API_URL}/users/profile`,
@@ -38,24 +38,29 @@ const fetchProfile = async (token: string | null) => {
         },
       }
     );
-
     return response.data;
   }
 };
 export const AuthContextProvider = ({ children }: any) => {
   const [state, dispatch] = useReducer(AuthReducer, initialState);
-  const { data, isFetching } = useQuery("getProfile", () =>
+  const { data, refetch } = useQuery("getProfile", () =>
     fetchProfile(state.token)
   );
 
   useEffect(() => {
-    if (state.token || isFetching) {
+    if (state.token) {
+      refetch();
+    }
+
+    if (data) {
       dispatch({
         type: AuthActionKind.PROFILE_USER,
-        payload: { profile: data },
+        payload: {
+          profile: data,
+        },
       });
     }
-  }, [data, state.token, isFetching]);
+  }, [state.token, refetch, data]);
 
   return (
     <AuthContext.Provider value={{ state, dispatch }}>

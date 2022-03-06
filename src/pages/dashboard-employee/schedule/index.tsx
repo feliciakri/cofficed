@@ -1,4 +1,7 @@
 import { useContext, useEffect, useState } from "react";
+import moment from "moment";
+import axios, { AxiosResponse, AxiosError } from "axios";
+import { useMutation, useQuery, useQueryClient } from "react-query";
 import {
   Button,
   LoadingOverlay,
@@ -7,8 +10,12 @@ import {
   ScrollArea,
   Select,
 } from "@mantine/core";
-import moment from "moment";
-import axios, { AxiosResponse, AxiosError } from "axios";
+import {
+  AttendancesDay,
+  AttendancesProps,
+  CertificateVaccine,
+} from "../../../types/type";
+import { useNotifications } from "@mantine/notifications";
 import {
   MapPin,
   Users,
@@ -16,17 +23,11 @@ import {
   SortAscending,
   SortDescending,
   XCircle,
+  Check,
 } from "phosphor-react";
-import { useMutation, useQuery, useQueryClient } from "react-query";
 import { AuthContext } from "../../../context/AuthContext";
 import DateComponent from "../../../components/Calendar";
 import { changeToDate } from "../../../utils/formatDateMoment";
-import {
-  AttendancesDay,
-  AttendancesProps,
-  CertificateVaccine,
-} from "../../../types/type";
-import { useNotifications } from "@mantine/notifications";
 
 type LocationState = {
   id: string;
@@ -116,7 +117,6 @@ const getAttendsByParams = async (attendecesByDays: AttendancesDay) => {
 
   if (token && date && office) {
     const dates = moment(date).format("YYYY-MM-DD");
-
     const { data: response } = await axios.get(
       `${process.env.REACT_APP_API_URL}/attendances/`,
       {
@@ -158,6 +158,7 @@ const ModalRequest = ({ opened, setOpened, days }: ModalProps) => {
       if (data.status === 200) {
         notifications.showNotification({
           title: "Success",
+          icon: <Check className="text-white" size={32} />,
           message: `${data.data.meta.message}`,
         });
         setTimeout(() => {
@@ -222,18 +223,10 @@ const ModalRequest = ({ opened, setOpened, days }: ModalProps) => {
         </div>
 
         <div className="px-4 py-4 flex justify-end gap-x-4">
-          <button
-            className="py-2 mx-4 text-gray-500"
-            onClick={() => setOpened(false)}
-          >
+          <Button variant="outline" onClick={() => setOpened(false)}>
             Back
-          </button>
-          <button
-            className="flex flex-row items-center bg-gray-700 text-white py-2 px-4 rounded"
-            onClick={handleRequestAttends}
-          >
-            Send Request WFO
-          </button>
+          </Button>
+          <Button onClick={handleRequestAttends}>Send Request WFO</Button>
         </div>
       </Modal>
     </>
@@ -241,7 +234,6 @@ const ModalRequest = ({ opened, setOpened, days }: ModalProps) => {
 };
 const CardListRequest = ({ attends }: ListProps) => {
   const { day, office, notes, status, admin } = attends;
-
   const date = moment(day).format("LL");
   const styleApproved = status.toLocaleLowerCase() === "approved";
   const styleRejected = status.toLocaleLowerCase() === "rejected";

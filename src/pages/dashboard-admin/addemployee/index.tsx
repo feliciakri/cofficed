@@ -3,13 +3,19 @@ import {
   Input,
   InputWrapper,
   PasswordInput,
-  Chips,
-  Chip,
   Text,
   RadioGroup,
   Radio,
 } from "@mantine/core";
-import { Envelope, User, Hash, Key, Phone, Check } from "phosphor-react";
+import {
+  Envelope,
+  User,
+  Hash,
+  Key,
+  Phone,
+  Check,
+  XCircle,
+} from "phosphor-react";
 import { ErrorMessage } from "@hookform/error-message";
 import axios from "axios";
 import { useNotifications } from "@mantine/notifications";
@@ -36,10 +42,9 @@ export default function AddEmployee() {
     axios
       .post(`${process.env.REACT_APP_API_URL}/users/register`, data)
       .then((res) => {
-        console.log(res.data.data);
         notifications.showNotification({
           title: "Success",
-          message: "Change avatas succesfully",
+          message: `Add ${res.data.role} is Succesfully`,
           icon: <Check size={20} />,
         });
         resetField("name");
@@ -53,6 +58,8 @@ export default function AddEmployee() {
         notifications.showNotification({
           title: "Error",
           message: "User Not Added",
+          color: "red",
+          icon: <XCircle className="text-white" size={32} />,
         });
       });
   };

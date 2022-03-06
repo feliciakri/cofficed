@@ -9,7 +9,7 @@ import {
   UserPlus,
   HandWaving,
 } from "phosphor-react";
-import { Link } from "react-router-dom";
+
 import {
   AppShell,
   Burger,
@@ -18,33 +18,15 @@ import {
   Navbar,
   ScrollArea,
   useMantineTheme,
-  LoadingOverlay,
   Divider,
   Badge,
   Center,
-  Skeleton,
 } from "@mantine/core";
 import { useState } from "react";
 import { NavLink } from "react-router-dom";
-import { useQuery } from "react-query";
 import { AuthContext } from "../../context/AuthContext";
 import { useContext } from "react";
-import axios from "axios";
 
-const fetchProfile = async (token: string | null) => {
-  if (token) {
-    const data = await axios.get(
-      `${process.env.REACT_APP_API_URL}/users/profile`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
-
-    return data.data.data;
-  }
-};
 const Layout = () => {
   const { state } = useContext(AuthContext);
   const { profile, role } = state;
@@ -174,26 +156,20 @@ const Layout = () => {
               <hr className="my-2" />
               <NavLink to="/profile/setting">
                 <div className="flex flex-row gap-x-2 items-center hover:cursor-pointer">
-                  {profile ? (
-                    <>
-                      <img
-                        src={`${profile?.avatar}?${Date.now()}`}
-                        alt="logo.png"
-                        className="rounded-full w-12 h-12"
-                      />
-                      <div className="flex flex-row items-center justify-between w-full">
-                        <div className="flex flex-col gap-y-0.5">
-                          <h1 className="text-base font-bold">
-                            {profile?.name}
-                          </h1>
-                          <p className="text-sm">{profile?.email}</p>
-                        </div>
-                        <CaretRight size={30} />
+                  <>
+                    <img
+                      src={`${profile?.avatar}?${Date.now()}`}
+                      alt="logo.png"
+                      className="rounded-full w-12 h-12"
+                    />
+                    <div className="flex flex-row items-center justify-between w-full">
+                      <div className="flex flex-col gap-y-0.5">
+                        <h1 className="text-base font-bold">{profile?.name}</h1>
+                        <p className="text-sm">{profile?.email}</p>
                       </div>
-                    </>
-                  ) : (
-                    <Skeleton height={40} radius="sm" />
-                  )}
+                      <CaretRight size={30} />
+                    </div>
+                  </>
                 </div>
               </NavLink>
             </Navbar.Section>
