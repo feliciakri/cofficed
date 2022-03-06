@@ -1,4 +1,4 @@
-import { Outlet } from "react-router-dom";
+import { Outlet, useNavigate, NavLink } from "react-router-dom";
 import {
   CalendarBlank,
   Syringe,
@@ -8,8 +8,9 @@ import {
   Scroll,
   UserPlus,
   HandWaving,
+  SignOut,
+  Gear,
 } from "phosphor-react";
-
 import {
   AppShell,
   Burger,
@@ -21,19 +22,83 @@ import {
   Divider,
   Badge,
   Center,
+  UnstyledButtonProps,
+  UnstyledButton,
+  Group,
+  Avatar,
+  Text,
+  Menu,
 } from "@mantine/core";
-import { useState } from "react";
-import { NavLink } from "react-router-dom";
+import { forwardRef, useState } from "react";
+
 import { AuthContext } from "../../context/AuthContext";
 import { useContext } from "react";
+import { AuthActionKind } from "../../context/AuthReducer";
 
 const Layout = () => {
   const { state } = useContext(AuthContext);
   const { profile, role } = state;
   const isAdmin = role?.toLowerCase() === "admin";
-
-  const [opened, setOpened] = useState(false);
+  const navigate = useNavigate();
   const theme = useMantineTheme();
+  const [opened, setOpened] = useState<boolean>(false);
+  //logout function
+  function LogOutHandler() {
+    localStorage.removeItem("token");
+    localStorage.removeItem("users");
+    dispatch({
+      type: AuthActionKind.LOGOUT,
+    });
+    const redirect = async () => {
+      await navigate("/");
+    };
+    redirect();
+  }
+
+  interface UserButtonProps extends UnstyledButtonProps {
+    avatar: string;
+    name: string;
+    email: string;
+    icon: React.ReactNode;
+  }
+
+  const UserButton = forwardRef<HTMLButtonElement, UserButtonProps>(
+    ({ avatar, name, email, icon, ...others }: UserButtonProps, ref) => (
+      <UnstyledButton
+        ref={ref}
+        {...others}
+        sx={(theme) => ({
+          width: "120%",
+          padding: theme.spacing.md,
+          color:
+            theme.colorScheme === "dark" ? theme.colors.dark[0] : theme.black,
+
+          "&:hover": {
+            backgroundColor:
+              theme.colorScheme === "dark"
+                ? theme.colors.dark[8]
+                : theme.colors.gray[0],
+          },
+        })}
+      >
+        <Group position="apart">
+          <Avatar src={avatar} radius="xl" />
+
+          <div style={{ flex: 1 }}>
+            <Text size="sm" weight={500}>
+              {name}
+            </Text>
+
+            <Text color="dimmed" size="xs">
+              {email}
+            </Text>
+          </div>
+
+          {icon || ">"}
+        </Group>
+      </UnstyledButton>
+    )
+  );
 
   return (
     <>
@@ -154,24 +219,38 @@ const Layout = () => {
             </Navbar.Section>
             <Navbar.Section>
               <hr className="my-2" />
-              <NavLink to="/profile/setting">
-                <div className="flex flex-row gap-x-2 items-center hover:cursor-pointer">
-                  <>
-                    <img
-                      src={`${profile?.avatar}?${Date.now()}`}
-                      alt="logo.png"
-                      className="rounded-full w-12 h-12"
+              <Group>
+                <Menu
+                  withArrow
+                  placement="center"
+                  position="top"
+                  control={
+                    <UserButton
+                      avatar={profile?.avatar}
+                      name={profile?.name}
+                      email={profile?.email}
+                      icon={<CaretRight size={30} />}
                     />
-                    <div className="flex flex-row items-center justify-between w-full">
-                      <div className="flex flex-col gap-y-0.5">
-                        <h1 className="text-base font-bold">{profile?.name}</h1>
-                        <p className="text-sm">{profile?.email}</p>
-                      </div>
-                      <CaretRight size={30} />
-                    </div>
-                  </>
-                </div>
-              </NavLink>
+                  }
+                >
+                  <Menu.Item
+                    component={NavLink}
+                    to="/profile/setting"
+                    icon={<Gear />}
+                  >
+                    Profile Settings
+                  </Menu.Item>
+                  <Menu.Item
+                    onClick={LogOutHandler}
+                    component={NavLink}
+                    to="/"
+                    color="red"
+                    icon={<SignOut />}
+                  >
+                    Sign Out
+                  </Menu.Item>
+                </Menu>
+              </Group>
             </Navbar.Section>
           </Navbar>
         }
@@ -179,10 +258,10 @@ const Layout = () => {
           <Header height={60} padding="xs">
             <div className="flex flex-row justify-between items-center">
               <div className="flex flex-row gap-x-6">
-                <NavLink to="/dashboard">
+                <NavLink to="/">
                   <div className="flex flex-row gap-x-2 items-center mx-3 font-fraunces">
                     <img
-                      src="/apple-touch-icon.png"
+                      src="/cofficed-logo-black.svg"
                       alt="logo"
                       className="w-9 h-9"
                     />
@@ -213,3 +292,6 @@ const Layout = () => {
 };
 
 export default Layout;
+function dispatch(arg0: { type: any }) {
+  throw new Error("Function not implemented.");
+}

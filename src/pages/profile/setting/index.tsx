@@ -7,7 +7,6 @@ import {
   PasswordInput,
 } from "@mantine/core";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../../../context/AuthContext";
 import { Dropzone, MIME_TYPES } from "@mantine/dropzone";
 import { ChangeEvent, useContext } from "react";
@@ -17,6 +16,7 @@ import { SubmitHandler, useForm } from "react-hook-form";
 import { AuthActionKind } from "../../../context/AuthReducer";
 import { useNotifications } from "@mantine/notifications";
 import { Check, XCircle } from "phosphor-react";
+import { useNavigate } from "react-router-dom";
 
 type ModalProps = {
   isOpened: boolean;
@@ -239,28 +239,13 @@ const ModalPassword = ({
 };
 
 const ProfileSetting = () => {
-  const { dispatch } = useContext(AuthContext);
   const { state } = useContext(AuthContext);
-  const { profile, role } = state;
-  const navigate = useNavigate();
-  const isAdmin = role?.toLowerCase() === "admin";
+  const { profile } = state;
 
   //avatar modal
   const [amOpened, setAmOpened] = useState(false);
   //password modal
   const [pwOpened, setPwOpened] = useState(false);
-  //logout function
-  function LogOutHandler() {
-    localStorage.removeItem("token");
-    localStorage.removeItem("users");
-    dispatch({
-      type: AuthActionKind.LOGOUT,
-    });
-    const redirect = async () => {
-      await navigate("/");
-    };
-    redirect();
-  }
 
   return (
     <>
@@ -271,17 +256,12 @@ const ProfileSetting = () => {
         datap={profile}
       />
       <div className="divide-y divide-gray-200">
-        <Button onClick={LogOutHandler} variant="outline" color="red">
-          Log Out
-        </Button>
-
-        <div className="mt-5 space-y-1">
-          <h3 className="text-lg leading-6 font-medium text-gray-900">
-            Profile
+        <div className="mt-2 space-y-1">
+          <h3 className="text-xl leading-6 font-medium font-fraunces text-gray-900">
+            Your Profile
           </h3>
           <p className="max-w-2xl text-sm text-gray-500">
-            This information will be displayed publicly so be careful what you
-            share.
+            Only your email, name and avatar are visible to your coworkers.
           </p>
         </div>
         <div className="mt-6">
@@ -291,6 +271,7 @@ const ProfileSetting = () => {
               <dd className="mt-1 flex text-sm text-gray-900 sm:mt-0 sm:col-span-2">
                 <span className="flex-grow">{profile?.name}</span>
                 {/* <span className="ml-4 flex-shrink-0">
+>>>>>>> 90c1764e9650799b7eae46a8ea0720f8d467de01
 									<button
 										type="button"
 										className="bg-white rounded-md font-medium text-purple-600 hover:text-purple-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"

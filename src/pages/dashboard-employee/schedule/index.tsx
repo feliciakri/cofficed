@@ -28,6 +28,7 @@ import {
 import { AuthContext } from "../../../context/AuthContext";
 import DateComponent from "../../../components/Calendar";
 import { changeToDate } from "../../../utils/formatDateMoment";
+import DefaultEmptyState from "../../../components/EmptyStates";
 
 type LocationState = {
   id: string;
@@ -353,7 +354,7 @@ const DashboardEmployeeSchedule = () => {
   );
 
   const {
-    data: dataAttendensByDay,
+    data: dataAttendants,
     refetch: refetchAttends,
     isFetching,
   } = useQuery("attendsByDay", () => getAttendsByParams(attendecesByDays));
@@ -503,8 +504,8 @@ const DashboardEmployeeSchedule = () => {
                 overlayColor="#c5c5c5"
               />
             )}
-            {!dataAttendensByDay && <p>No one</p>}
-            {dataAttendensByDay?.map((attends: AttendancesProps, i: number) => (
+            {!dataAttendants && <DefaultEmptyState />}
+            {dataAttendants?.map((attends: AttendancesProps, i: number) => (
               <ListAttendances attends={attends} key={i} />
             ))}
           </ScrollArea>

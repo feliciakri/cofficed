@@ -13,6 +13,8 @@ import { Dropzone, MIME_TYPES } from "@mantine/dropzone";
 import { Check, Spinner, Upload, X, XCircle } from "phosphor-react";
 import { AuthContext } from "../../../context/AuthContext";
 import { useNotifications } from "@mantine/notifications";
+import DefaultEmptyState from "../../../components/EmptyStates";
+
 type CertificateProps = {
   dosage: number;
   status: string;
@@ -139,6 +141,7 @@ const ModalVaccine = ({ isOpened, setIsOpened }: ModalVaccineProps) => {
     </Modal>
   );
 };
+
 const fecthCertificate = async (token: string | null) => {
   if (token) {
     const { data: response } = await axios.get(
@@ -178,6 +181,11 @@ const DashboardEmployeeVaccine = () => {
           vaccine certificates 💉
         </h1>
       </div>
+      {!data && (
+        <div className="mx-auto h-80 w-80 mt-5">
+          <DefaultEmptyState />
+        </div>
+      )}
       <div className="my-6">
         <Stepper
           active={active}
