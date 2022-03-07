@@ -5,10 +5,15 @@ import { Bell } from "phosphor-react";
 import { useContext, useState } from "react";
 import { useQuery } from "react-query";
 import { AuthContext } from "../../../context/AuthContext";
+import DefaultEmptyState from "../../EmptyStates";
 
+type NotificationsData = {
+  name: string;
+  created_at: string;
+};
 const Notifications = () => {
   const { state } = useContext(AuthContext);
-  const { data } = useQuery("getNotifications", async () => {
+  const { data, refetch } = useQuery("getNotifications", async () => {
     if (state.token) {
       const { data: response } = await axios.get(
         `${process.env.REACT_APP_API_URL}/logcats/user`,
@@ -27,6 +32,7 @@ const Notifications = () => {
 
   const handleDropdown = () => {
     setIsDropdown(!isDropdown);
+    refetch();
   };
   return (
     <div>
@@ -35,20 +41,25 @@ const Notifications = () => {
         onClick={handleDropdown}
       >
         <Bell size={25} />
-        <div className="absolute -top-2 -right-1 bg-red-600 text-white p-1 rounded-full text-sm w-5 h-5 flex justify-center items-center">
-          {data?.length}
-        </div>
       </div>
       <div
-        className={`${!isDropdown ? "hidden" : ""} absolute
-top-10 right-10 bg-white text-base z-50 list-none divide-y divide-gray-100 rounded shadow my-4`}
+        className={`${!isDropdown ? "hidden" : ""} max-h-92 absolute
+top-10 right-2 lg:right-10 bg-white text-base z-50 list-none divide-y divide-gray-100 rounded shadow my-4`}
+        role="menu"
+        aria-orientation="vertical"
+        aria-labelledby="menu-button"
       >
         <div className="px-4 py-3">
           <h1>Notifications</h1>
         </div>
         <ul className="py-1" aria-labelledby="dropdown">
-          <ScrollArea style={{ height: 250 }}>
-            {data?.map((notif: any, i: number) => (
+          <ScrollArea style={{ height: 300 }}>
+            {!data && (
+              <div className="lg:w-1/2 mx-auto">
+                <DefaultEmptyState />
+              </div>
+            )}
+            {data?.map((notif: NotificationsData, i: number) => (
               <li key={i} className=" px-4 py-2">
                 <p>{notif.name}</p>
                 <p className="text-sm text-blue-500">
