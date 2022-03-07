@@ -34,6 +34,7 @@ import { forwardRef, useState } from "react";
 import { AuthContext } from "../../context/AuthContext";
 import { useContext } from "react";
 import { AuthActionKind } from "../../context/AuthReducer";
+import Notifications from "./Notifications";
 
 const Layout = () => {
   const { state } = useContext(AuthContext);
@@ -280,16 +281,18 @@ const Layout = () => {
                   </div>
                 </NavLink>
               </div>
-
-              <MediaQuery largerThan="sm" styles={{ display: "none" }}>
-                <Burger
-                  opened={opened}
-                  onClick={() => setOpened((o) => !o)}
-                  size="sm"
-                  color={theme.colors.gray[6]}
-                  mr="xl"
-                />
-              </MediaQuery>
+              <div className="flex flex-row gap-x-3 items-center">
+                <Notifications />
+                <MediaQuery largerThan="sm" styles={{ display: "none" }}>
+                  <Burger
+                    opened={opened}
+                    onClick={() => setOpened((o) => !o)}
+                    size="sm"
+                    color={theme.colors.gray[6]}
+                    mr="xl"
+                  />
+                </MediaQuery>
+              </div>
             </div>
           </Header>
         }

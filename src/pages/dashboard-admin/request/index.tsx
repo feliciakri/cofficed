@@ -324,7 +324,7 @@ const getAttendances = async (attend: AttendProps) => {
     const { status, order_by, office_id, date } = attend;
     const date_start = date ? moment(date[0]).format("YYYY-MM-DD") : "";
     const date_end = date ? moment(date[1]).format("YYYY-MM-DD") : "";
-    console.log(status, date_start, date_end, order_by, office_id);
+
     const data = await axios.get(
       `${process.env.REACT_APP_API_URL}/attendances/`,
       {

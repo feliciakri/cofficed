@@ -30,11 +30,11 @@ import DateComponent from "../../../components/Calendar";
 import { changeToDate } from "../../../utils/formatDateMoment";
 import DefaultEmptyState from "../../../components/EmptyStates";
 
-type LocationState = {
+export type LocationState = {
   id: string;
   name: string;
 };
-type CategoryState = {
+export type CategoryState = {
   label: string;
   value: string;
 };
@@ -360,9 +360,9 @@ const DashboardEmployeeSchedule = () => {
   } = useQuery("attendsByDay", () => getAttendsByParams(attendecesByDays));
 
   useEffect(() => {
-    if (dataAllAttends && isLocation[0]) {
+    if (dataAllAttends?.current_attendances && isLocation[0]) {
       const num = Math.ceil(
-        dataAllAttends.current_attendances.length / tablePerPage
+        dataAllAttends?.current_attendances?.length / tablePerPage
       );
       setTotalPage(num);
       const dataAttends = dataAllAttends?.current_attendances.slice(
