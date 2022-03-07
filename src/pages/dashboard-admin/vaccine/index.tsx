@@ -5,6 +5,7 @@ import {
   Radio,
   Table,
   Button,
+  Pagination,
 } from "@mantine/core";
 import { useNotifications } from "@mantine/notifications";
 import axios, { AxiosError, AxiosResponse } from "axios";
@@ -15,7 +16,7 @@ import {
   X,
   XCircle,
 } from "phosphor-react";
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import { AuthContext } from "../../../context/AuthContext";
 
@@ -261,12 +262,28 @@ const DashboardAdminVaccine = () => {
   const { state } = useContext(AuthContext);
   const { token } = state;
   const [filteredByOrder, setFilteredByOrder] = useState<boolean>(false);
+  const [activePage, setPage] = useState<number>(1);
+  const [totalPage, setTotalPage] = useState<number>(1);
+  const [isCertificatesUser, setIsCertificatesUser] = useState<any>();
+  const tablePerPage = 6;
   const { data, isLoading, refetch } = useQuery("getAllCertificate", () =>
     getAllCertificate({
       token: token,
       order_by: filteredByOrder ? "asc" : "desc",
     })
   );
+
+  useEffect(() => {
+    if (data) {
+      const num = Math.ceil(data?.length / tablePerPage);
+      setTotalPage(num);
+      const dataCertificate = data?.slice(
+        (activePage - 1) * tablePerPage,
+        activePage * tablePerPage
+      );
+      setIsCertificatesUser(dataCertificate);
+    }
+  }, [data, activePage]);
   const handleFilterBySort = () => {
     setFilteredByOrder(!filteredByOrder);
     setTimeout(() => {
@@ -308,11 +325,21 @@ const DashboardAdminVaccine = () => {
               </tr>
             </thead>
             <tbody>
-              {data?.map((certificate: UserCertificate, i: number) => (
-                <TableAdminVaccine certificate={certificate} key={i} />
-              ))}
+              {isCertificatesUser?.map(
+                (certificate: UserCertificate, i: number) => (
+                  <TableAdminVaccine certificate={certificate} key={i} />
+                )
+              )}
             </tbody>
           </Table>
+        </div>
+        <div className="flex mt-8 justify-center">
+          <Pagination
+            page={activePage}
+            onChange={setPage}
+            total={totalPage}
+            color="cyan"
+          />
         </div>
       </div>
     </>
