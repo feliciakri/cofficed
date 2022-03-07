@@ -1,9 +1,9 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-@import url("https://fonts.googleapis.com/css2?family=Fraunces:wght@700&family=Quicksand&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Fraunces:wght@700&family=Questrial&display=swap");
 
 body {
-  font-family: "Quicksand", sans-serif;
-  background-color: #f8f9fa;
+	font-family: "Questrial", sans-serif;
+	background-color: #f8f9fa;
 }

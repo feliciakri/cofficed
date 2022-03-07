@@ -1,6 +1,8 @@
-import React, { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
+import moment from "moment";
+import axios, { AxiosResponse, AxiosError } from "axios";
+import { useMutation, useQuery, useQueryClient } from "react-query";
 import {
-  Alert,
   Button,
   LoadingOverlay,
   Modal,
@@ -8,66 +10,51 @@ import {
   ScrollArea,
   Select,
 } from "@mantine/core";
-import moment from "moment";
-import axios, { AxiosResponse, AxiosError } from "axios";
-import { MapPin, Users, CalendarBlank } from "phosphor-react";
-import { useMutation, useQuery, useQueryClient } from "react-query";
+import {
+  AttendancesDay,
+  AttendancesProps,
+  CertificateVaccine,
+} from "../../../types/type";
+import { useNotifications } from "@mantine/notifications";
+import {
+  MapPin,
+  Users,
+  CalendarBlank,
+  SortAscending,
+  SortDescending,
+  XCircle,
+  Check,
+} from "phosphor-react";
 import { AuthContext } from "../../../context/AuthContext";
 import DateComponent from "../../../components/Calendar";
 import { changeToDate } from "../../../utils/formatDateMoment";
+import DefaultEmptyState from "../../../components/EmptyStates";
 
-type CertificateVaccine = {
-  admin: string;
-  id: string;
-  dosage: number;
-  image: string;
-  user: string;
-  status: string;
-};
-
-type AttendancesState = {
-  id: string;
-  office: string;
-  Quota: number;
-  date: string;
-};
-interface AttendancesDay {
-  id?: string;
-  office?: string;
-  Quota?: number;
-  date?: string;
-  token: string | null;
-}
-
-type AttendsProps = {
-  id: string;
-  office: string;
-  employee: string;
-  notes: string;
-  admin: string;
-  status: string;
-  day: string;
-  user_avatar: string;
-  user_email: string;
-  nik: string;
-};
 type LocationState = {
   id: string;
   name: string;
 };
+type CategoryState = {
+  label: string;
+  value: string;
+};
 type ListProps = {
-  attends: AttendsProps;
+  attends: AttendancesProps;
 };
 
 type ModalProps = {
   opened: boolean;
   setOpened: (args: boolean) => void;
-  days: AttendancesState;
+  days: AttendancesDay;
+};
+
+type CalendarType = {
+  date: string | Date;
 };
 
 type PostType = {
   token: string | null;
-  id: string;
+  id: string | undefined;
 };
 
 const fetchCategory = async () => {
@@ -77,11 +64,10 @@ const fetchCategory = async () => {
 
 const postDate = async (data: PostType) => {
   const { token, id } = data;
-
   const response = await axios
     .post(
       `${process.env.REACT_APP_API_URL}/attendances/`,
-      { day: id },
+      { day_id: id },
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -92,9 +78,8 @@ const postDate = async (data: PostType) => {
       return response;
     })
     .catch((error: AxiosError) => {
-      return error.message;
+      return error.response?.data?.meta.message;
     });
-
   return response;
 };
 
@@ -112,48 +97,39 @@ const fecthCertificate = async (token: string | null) => {
   }
 };
 
-const fetchProfile = async (token: string | null) => {
-  if (token) {
-    const { data: response } = await axios.get(
-      `${process.env.REACT_APP_API_URL}/users/profile`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
-
-    return response.data;
-  }
+type AttendancesUser = {
+  token: string | null;
+  order: string;
 };
+const getAttendancesByUser = async (data: AttendancesUser) => {
+  const { data: response } = await axios.get(
+    `${process.env.REACT_APP_API_URL}/attendances/user`,
+    {
+      params: {
+        order_by: data.order,
+      },
+      headers: {
+        Authorization: `Bearer ${data.token}`,
+      },
+    }
+  );
 
-const getAllAttends = async (token: string | null) => {
-  if (token) {
-    const data = await axios.get(
-      `${process.env.REACT_APP_API_URL}/attendances/`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
-
-    return data;
-  }
+  return response.data;
 };
 
 const getAttendsByParams = async (attendecesByDays: AttendancesDay) => {
-  const { token, date, office } = attendecesByDays;
+  const { token, date, office, value } = attendecesByDays;
 
   if (token && date && office) {
     const dates = moment(date).format("YYYY-MM-DD");
-
     const { data: response } = await axios.get(
       `${process.env.REACT_APP_API_URL}/attendances/`,
       {
         params: {
-          date: dates,
-          office: office,
+          date_start: dates,
+          date_end: dates,
+          office_id: value,
+          status: "approved",
         },
         headers: {
           Authorization: `Bearer ${token}`,
@@ -164,13 +140,13 @@ const getAttendsByParams = async (attendecesByDays: AttendancesDay) => {
     return response.data;
   }
 };
-const getCalendar = async (category: LocationState | undefined) => {
+const getCalendar = async (category: CategoryState | undefined) => {
   if (category) {
     const { data: response } = await axios.get(
       `${process.env.REACT_APP_API_URL}/days/`,
       {
         params: {
-          office_id: category.id,
+          office_id: category.value,
         },
       }
     );
@@ -180,26 +156,29 @@ const getCalendar = async (category: LocationState | undefined) => {
 
 const ModalRequest = ({ opened, setOpened, days }: ModalProps) => {
   const queryClient = useQueryClient();
+  const notifications = useNotifications();
   const { state } = useContext(AuthContext);
-  const { token } = state;
-  const { isLoading, data } = useQuery("getProfile", () => fetchProfile(token));
-  const [isSuccess, setIsSuccess] = useState<boolean>(false);
-  const [isError, setIsError] = useState<boolean>(false);
+  const { token, profile } = state;
   const mutation = useMutation(postDate, {
     onSettled: (data: any) => {
       if (data.status === 200) {
-        setIsSuccess(true);
+        notifications.showNotification({
+          title: "Success",
+          icon: <Check className="text-white" size={32} />,
+          message: `${data.data.meta.message}`,
+        });
         setTimeout(() => {
           setOpened(false);
-          setIsSuccess(false);
         }, 2000);
-        queryClient.invalidateQueries("allAttendence");
+        queryClient.invalidateQueries("attendanceByUser");
         queryClient.invalidateQueries("attendsByDay");
       } else {
-        setIsError(true);
-        setTimeout(() => {
-          setIsError(false);
-        }, 2000);
+        notifications.showNotification({
+          title: "Failed",
+          color: "red",
+          message: `${data}`,
+          icon: <XCircle className="text-white" size={32} />,
+        });
       }
     },
   });
@@ -211,9 +190,6 @@ const ModalRequest = ({ opened, setOpened, days }: ModalProps) => {
     await mutation.mutate(data);
   };
   const date = days && moment(days.date).format("LL");
-  if (isLoading) {
-    <LoadingOverlay visible={true} />;
-  }
 
   return (
     <>
@@ -231,21 +207,6 @@ const ModalRequest = ({ opened, setOpened, days }: ModalProps) => {
           modal: { padding: 0 },
         }}
       >
-        {isLoading && <LoadingOverlay visible={true} />}
-        {isSuccess && (
-          <div className="mx-4 my-2">
-            <Alert title="Success!" color="blue">
-              WFO request successful!
-            </Alert>
-          </div>
-        )}
-        {isError && (
-          <div className="mx-4 my-2">
-            <Alert title="Failed!" color="red">
-              The WFO request has passed or has been registered on the same day!
-            </Alert>
-          </div>
-        )}
         <div className="bg-blue-100 px-4 w-full flex flex-row justify-between py-4">
           <div className="w-1/2">
             <h2 className="text-gray-500 text-sm">Date</h2>
@@ -259,35 +220,26 @@ const ModalRequest = ({ opened, setOpened, days }: ModalProps) => {
         <div className="px-4 flex flex-row justify-between py-3">
           <div className="w-1/2">
             <h2 className="text-gray-500 text-sm">Applicant</h2>
-            <p>{data.name}</p>
+            <p>{profile?.name}</p>
           </div>
           <div className="w-1/2">
             <h2 className="text-gray-500 text-sm">NIK</h2>
-            <p>{data.nik}</p>
+            <p>{profile?.nik}</p>
           </div>
         </div>
 
         <div className="px-4 py-4 flex justify-end gap-x-4">
-          <button
-            className="py-2 mx-4 text-gray-500"
-            onClick={() => setOpened(false)}
-          >
+          <Button variant="outline" onClick={() => setOpened(false)}>
             Back
-          </button>
-          <button
-            className="flex flex-row items-center bg-gray-700 text-white py-2 px-4 rounded"
-            onClick={handleRequestAttends}
-            disabled={isSuccess}
-          >
-            Send Request WFO
-          </button>
+          </Button>
+          <Button onClick={handleRequestAttends}>Send Request WFO</Button>
         </div>
       </Modal>
     </>
   );
 };
 const CardListRequest = ({ attends }: ListProps) => {
-  const { day, office, employee, notes, status } = attends;
+  const { day, office, notes, status, admin } = attends;
   const date = moment(day).format("LL");
   const styleApproved = status.toLocaleLowerCase() === "approved";
   const styleRejected = status.toLocaleLowerCase() === "rejected";
@@ -296,7 +248,7 @@ const CardListRequest = ({ attends }: ListProps) => {
     <div className="bg-white shadow-sm p-3 flex flex-col space-y-2 border-b text-gray-500">
       <div className="flex space-x-2 items-center">
         <Users size={25} />
-        <h1>{employee}</h1>
+        <h1>{admin}</h1>
       </div>
       <div className="flex space-x-2 items-center">
         <MapPin size={25} />
@@ -333,7 +285,7 @@ const CardListRequest = ({ attends }: ListProps) => {
     </div>
   );
 };
-const ListAttendences = ({ attends }: ListProps) => {
+const ListAttendances = ({ attends }: ListProps) => {
   const { employee, user_email, user_avatar } = attends;
   return (
     <div className="flex flex-row border-b-2 gap-x-4 items-center">
@@ -352,15 +304,16 @@ const ListAttendences = ({ attends }: ListProps) => {
 const DashboardEmployeeSchedule = () => {
   const { state } = useContext(AuthContext);
   const { token } = state;
-  const [isLocation, setIsLocation] = useState<LocationState[]>([]);
-  const [filteredCategory, setFilteredCategory] = useState<LocationState>();
 
-  const [isDays, setIsDays] = useState<AttendancesState>();
+  const [isLocation, setIsLocation] = useState<LocationState[]>([]);
+  const [filteredCategory, setFilteredCategory] = useState<CategoryState>();
+
+  const [isDays, setIsDays] = useState<AttendancesDay>();
 
   const [opened, setOpened] = useState<boolean>(false);
   // Pagination
   const tablePerPage = 3;
-  const [isAttendences, setIsAttendences] = useState<AttendsProps[]>();
+  const [isAttendences, setIsAttendences] = useState<AttendancesProps[]>();
   const [activePage, setPage] = useState<number>(1);
   const [totalPage, setTotalPage] = useState<number>(1);
 
@@ -391,29 +344,36 @@ const DashboardEmployeeSchedule = () => {
     ...isDays,
   };
 
-  const { data: dataAllAttends } = useQuery("allAttendence", () =>
-    getAllAttends(token)
+  const { data: dataAllAttends, refetch: refetchAttendanceUser } = useQuery(
+    "attendanceByUser",
+    () =>
+      getAttendancesByUser({
+        token: token,
+        order: filteredByOrder ? "asc" : "desc",
+      })
   );
 
   const {
-    data: dataAttendensByDay,
+    data: dataAttendants,
     refetch: refetchAttends,
     isFetching,
   } = useQuery("attendsByDay", () => getAttendsByParams(attendecesByDays));
 
   useEffect(() => {
     if (dataAllAttends && isLocation[0]) {
-      const num = Math.ceil(dataAllAttends.data.data.length / tablePerPage);
+      const num = Math.ceil(
+        dataAllAttends.current_attendances.length / tablePerPage
+      );
       setTotalPage(num);
-      const dataAttends = dataAllAttends?.data.data.slice(
+      const dataAttends = dataAllAttends?.current_attendances.slice(
         (activePage - 1) * tablePerPage,
         activePage * tablePerPage
       );
 
       setIsAttendences(dataAttends);
       setFilteredCategory({
-        name: isLocation[0].name,
-        id: isLocation[0].id,
+        label: isLocation[0].name,
+        value: isLocation[0].id,
       });
     }
     if (data) {
@@ -426,8 +386,8 @@ const DashboardEmployeeSchedule = () => {
       (location: LocationState) => location.id === e
     );
     setFilteredCategory({
-      name: category[0].name,
-      id: category[0].id,
+      label: category[0].name,
+      value: category[0].id,
     });
     setTimeout(() => {
       refetch();
@@ -437,17 +397,25 @@ const DashboardEmployeeSchedule = () => {
   const handleChangeCalendar = (e: Date) => {
     if (dataCalendar) {
       const filteredCalendars = dataCalendar.filter(
-        (calender: AttendancesState) =>
+        (calender: CalendarType) =>
           changeToDate(calender.date) === changeToDate(e)
       );
 
       if (filteredCalendars.length > 0) {
-        setIsDays({ ...filteredCalendars[0] });
+        setIsDays({ ...filteredCalendars[0], ...filteredCategory });
         setTimeout(() => {
           refetchAttends();
         }, 400);
       }
     }
+  };
+
+  const [filteredByOrder, setFilteredByOrder] = useState<boolean>(false);
+  const handleFilterBySort = () => {
+    setFilteredByOrder(!filteredByOrder);
+    setTimeout(() => {
+      refetchAttendanceUser();
+    }, 300);
   };
 
   return (
@@ -464,10 +432,24 @@ const DashboardEmployeeSchedule = () => {
             data={dataLocation}
           />
         )}
-        <h1 className="mt-5">Request Log</h1>
+        <div className="flex justify-between items-center my-4">
+          <h1>My Request Log</h1>
+          <button
+            className="rounded-r-xl border-2 h-full px-2 text-sm flex flex-row gap-x-2 items-center cursor-pointer transition duration-150 transform hover:scale-105 hover:bg-white"
+            onClick={handleFilterBySort}
+          >
+            {filteredByOrder ? (
+              <SortAscending size={20} />
+            ) : (
+              <SortDescending size={20} />
+            )}
+            Sort
+          </button>
+        </div>
         <div className="flex flex-col justify-between h-screen">
           <div className="flex flex-col my-2">
-            {isAttendences?.map((data: AttendsProps, i: number) => (
+            {!isAttendences && <DefaultEmptyState />}
+            {isAttendences?.map((data: AttendancesProps, i: number) => (
               <CardListRequest attends={data} key={i} />
             ))}
           </div>
@@ -482,7 +464,7 @@ const DashboardEmployeeSchedule = () => {
           </div>
         </div>
       </div>
-      <div className="mx-6">
+      <div className="lg:mx-6 mx-auto">
         <DateComponent
           data={dataCalendar}
           onHandle={handleChangeCalendar}
@@ -523,9 +505,9 @@ const DashboardEmployeeSchedule = () => {
                 overlayColor="#c5c5c5"
               />
             )}
-            {!dataAttendensByDay && <p>No one</p>}
-            {dataAttendensByDay?.map((attends: AttendsProps, i: number) => (
-              <ListAttendences attends={attends} key={i} />
+            {!dataAttendants && <DefaultEmptyState />}
+            {dataAttendants?.map((attends: AttendancesProps, i: number) => (
+              <ListAttendances attends={attends} key={i} />
             ))}
           </ScrollArea>
         </div>

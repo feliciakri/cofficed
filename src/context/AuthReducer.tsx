@@ -1,5 +1,5 @@
 export enum AuthActionKind {
-  LOGIN_START = "LOGIN_START",
+  PROFILE_USER = "PROFILE_USER",
   LOGIN_SUCCESS = "LOGIN_SUCCESS",
   LOGIN_FAILED = "LOGIN_FAILED",
   LOGOUT = "LOGOUT",
@@ -17,14 +17,23 @@ const AuthReducer = (state: any, action: ActionProps) => {
       return {
         token: payload.token,
         role: payload.role,
+        profile: null,
         isLogged: true,
       };
     }
-
+    case AuthActionKind.PROFILE_USER: {
+      return {
+        token: state.token,
+        role: state.role,
+        profile: { ...payload.profile },
+        isLogged: state.isLogged,
+      };
+    }
     case AuthActionKind.LOGIN_FAILED: {
       return {
         token: null,
         role: null,
+        profile: null,
         isLogged: false,
       };
     }
@@ -33,6 +42,7 @@ const AuthReducer = (state: any, action: ActionProps) => {
       return {
         token: null,
         role: null,
+        profile: null,
         isLogged: false,
       };
     }
