@@ -204,6 +204,17 @@ const Layout = () => {
                     WFO Requests
                   </NavLink>
                   <NavLink
+                    to="/dashboard-admin/check-ins"
+                    className={({ isActive }) =>
+                      `${
+                        isActive ? "bg-gray-200" : ""
+                      } flex flex-row items-center w-full hover:bg-gray-200 cursor-point py-3 px-2 my-1 gap-x-4 rounded-md`
+                    }
+                  >
+                    <UserPlus size={20} />
+                    Check Ins
+                  </NavLink>
+                  <NavLink
                     to="/dashboard-admin/add-employee"
                     className={({ isActive }) =>
                       `${

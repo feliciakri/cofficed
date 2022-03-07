@@ -13,10 +13,8 @@ import { ChangeEvent, useContext } from "react";
 import axios, { AxiosError, AxiosResponse } from "axios";
 import { useMutation, useQueryClient } from "react-query";
 import { SubmitHandler, useForm } from "react-hook-form";
-import { AuthActionKind } from "../../../context/AuthReducer";
 import { useNotifications } from "@mantine/notifications";
 import { Check, XCircle } from "phosphor-react";
-import { useNavigate } from "react-router-dom";
 
 type ModalProps = {
   isOpened: boolean;
@@ -271,7 +269,6 @@ const ProfileSetting = () => {
               <dd className="mt-1 flex text-sm text-gray-900 sm:mt-0 sm:col-span-2">
                 <span className="flex-grow">{profile?.name}</span>
                 {/* <span className="ml-4 flex-shrink-0">
->>>>>>> 90c1764e9650799b7eae46a8ea0720f8d467de01
 									<button
 										type="button"
 										className="bg-white rounded-md font-medium text-purple-600 hover:text-purple-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
