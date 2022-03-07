@@ -30,11 +30,9 @@ import {
   Menu,
 } from "@mantine/core";
 import { forwardRef, useState } from "react";
-
 import { AuthContext } from "../../context/AuthContext";
 import { useContext } from "react";
 import { AuthActionKind } from "../../context/AuthReducer";
-import Notifications from "./Notifications";
 
 const Layout = () => {
   const { state } = useContext(AuthContext);
@@ -282,7 +280,6 @@ const Layout = () => {
                 </NavLink>
               </div>
               <div className="flex flex-row gap-x-3 items-center">
-                <Notifications />
                 <MediaQuery largerThan="sm" styles={{ display: "none" }}>
                   <Burger
                     opened={opened}

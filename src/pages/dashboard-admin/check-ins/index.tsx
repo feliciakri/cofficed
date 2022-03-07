@@ -1,591 +1,191 @@
-// import { useContext, useEffect, useState, ChangeEvent } from "react";
-// import {
-//   Menu,
-//   Divider,
-//   Pagination,
-//   Table,
-//   Modal,
-//   Button,
-//   Input,
-//   LoadingOverlay,
-//   Loader,
-//   RadioGroup,
-//   Radio,
-// } from "@mantine/core";
-// import { useMutation, useQuery, useQueryClient } from "react-query";
-// import moment from "moment";
-// import axios, { AxiosError, AxiosResponse } from "axios";
-// import { AuthContext } from "../../../context/AuthContext";
-// import {
-//   Check,
-//   List,
-//   SortAscending,
-//   SortDescending,
-//   XCircle,
-// } from "phosphor-react";
-// import { useNotifications } from "@mantine/notifications";
-// import { AttendancesProps } from "../../../types/type";
-
-// type PropsTable = {
-//   attends: AttendancesProps;
-// };
-// type ModalRequestProps = {
-//   attends: AttendancesProps;
-//   mutation?: any;
-//   token: string | null;
-//   isOpen: boolean;
-//   setIsOpen: (arg: boolean) => void;
-// };
-// type ApprovedPost = {
-//   id: string;
-//   token: string | null;
-//   status: string;
-//   notes?: string;
-// };
-
-// const postStatusAttends = async (approved: ApprovedPost) => {
-//   const { token, id, status, notes } = approved;
-
-//   const response = await axios
-//     .put(
-//       `${process.env.REACT_APP_API_URL}/attendances/`,
-//       { id: id, status: status, notes: notes },
-//       {
-//         headers: {
-//           Authorization: `Bearer ${token}`,
-//         },
-//       }
-//     )
-//     .then((response: AxiosResponse) => {
-//       return response;
-//     })
-//     .catch((error: AxiosError) => {
-//       return error.response?.data?.meta.message;
-//     });
-
-//   return response;
-// };
-
-// const ModalRequest = ({
-//   attends,
-//   mutation,
-//   token,
-//   isOpen,
-//   setIsOpen,
-// }: ModalRequestProps) => {
-//   const [valueStatus, setValueStatus] = useState<string>("approved");
-//   const [isDescription, setIsDescription] = useState<string>();
-//   const { id, office, employee, nik } = attends;
-
-//   const handleRequest = async () => {
-//     const approved = {
-//       id: id,
-//       token: token,
-//       notes: isDescription ? isDescription : "",
-//       status: valueStatus,
-//     };
-//     await mutation.mutate(approved);
-//     setTimeout(() => {
-//       setIsDescription("");
-//     }, 300);
-//   };
-
-//   return (
-//     <Modal
-//       title="Request Work from Office"
-//       centered
-//       styles={{
-//         header: { paddingLeft: 20, paddingRight: 20, paddingTop: 10 },
-//         modal: { padding: 0 },
-//       }}
-//       opened={isOpen}
-//       onClose={() => setIsOpen(false)}
-//     >
-//       <>
-//         <div className="flex flex-row justify-between bg-blue-100 px-4 text-sm">
-//           <div className="w-1/2 flex flex-col py-4">
-//             <h1>Office Location</h1>
-//             <p className="font-semibold">{office}</p>
-//           </div>
-//         </div>
-//         <div className="m-4">
-//           <div className=" p-2 border rounded-md flex flex-row justify-between text-sm">
-//             <div className="w-1/2 flex flex-col">
-//               <h1>Name</h1>
-//               <p className="font-semibold">{employee}</p>
-//             </div>
-//             <div className="w-1/2 flex flex-col">
-//               <h1>NIK</h1>
-//               <p className="font-semibold">{nik}</p>
-//             </div>
-//           </div>
-//           <div className="flex justify-center my-4">
-//             <div>
-//               <RadioGroup
-//                 value={valueStatus}
-//                 onChange={setValueStatus}
-//                 color="dark"
-//                 className="flex justify-center py-3"
-//                 required
-//               >
-//                 <Radio value="approved" className="border p-2">
-//                   Approve
-//                 </Radio>
-
-//                 <Radio value="rejected" className="border p-2">
-//                   Reject
-//                 </Radio>
-//               </RadioGroup>
-//             </div>
-//           </div>
-//           <div className="flex flex-col justify-between gap-y-1 text-sm my-3">
-//             <label className="font-semibold">Description</label>
-//             <Input
-//               onChange={(e: ChangeEvent<HTMLInputElement>) =>
-//                 setIsDescription(e.target.value)
-//               }
-//             />
-//           </div>
-
-//           <div className="py-4 flex justify-end gap-x-4">
-//             <Button onClick={() => setIsOpen(false)} variant="outline">
-//               Back
-//             </Button>
-//             <Button type="button" onClick={handleRequest}>
-//               Confirm
-//             </Button>
-//           </div>
-//         </div>
-//       </>
-//     </Modal>
-//   );
-// };
-// const TableAdmin = ({ attends }: any) => {
-//   const queryClient = useQueryClient();
-//   const { state } = useContext(AuthContext);
-//   const { token } = state;
-//   const notifications = useNotifications();
-//   const [isOpen, setIsOpen] = useState<boolean>(false);
-//   const { id, office, employee, status, user_avatar, temperatur } = attends;
-//   console.log(attends);
-//   // style by status
-//   // const styleApproved = status.toLocaleLowerCase() === "approved";
-//   // const styleRejected = status.toLocaleLowerCase() === "rejected";
-//   // const stylePending = status.toLocaleLowerCase() === "pending";
-//   const mutation = useMutation(postStatusAttends, {
-//     onSuccess: (data) => {
-//       queryClient.invalidateQueries("allAttendence");
-//       queryClient.invalidateQueries("attendenceByRange");
-//       setIsOpen(false);
-//       notifications.showNotification({
-//         title: "Success",
-//         message: "Change Status Request is Successfully",
-//         icon: <Check size={20} />,
-//       });
-//     },
-//     onError: async (data: any) => {
-//       notifications.showNotification({
-//         title: "Failed",
-//         color: "red",
-//         message: `${data}`,
-//         icon: <XCircle className="text-white" size={32} />,
-//       });
-//     },
-//   });
-
-//   const handleStatus = async (e: string) => {
-//     const approved = {
-//       id: id,
-//       token: token,
-//       status: e,
-//     };
-//     await mutation.mutate(approved);
-//   };
-
-//   return (
-//     <>
-//       <ModalRequest
-//         attends={attends}
-//         isOpen={isOpen}
-//         setIsOpen={setIsOpen}
-//         token={token}
-//         mutation={mutation}
-//       />
-//       <tr className="bg-white text-gray-900">
-//         <td className="capitalize flex flex-row space-x-2 items-center">
-//           {/* <img
-//             src={`${
-//               user_avatar ? user_avatar : "/apple-touch-icon.png"
-//             }?${Date.now()}`}
-//             alt="logo"
-//             className="w-10 h-10 rounded-full"
-//           /> */}
-//           <div className="flex flex-col">
-//             {/* <p>{employee}</p>
-//              <p>{user_email}</p>  */}
-//           </div>
-//         </td>
-//         <td className="font-semibold">{office}</td>
-//         <td>
-//           {/* <span
-//             className={` ${
-//               styleApproved
-//                 ? "bg-green-200 text-green-900"
-//                 : styleRejected
-//                 ? "bg-red-200 text-red-900"
-//                 : stylePending
-//                 ? "bg-gray-200 text-gray-900"
-//                 : ""
-//             } p-0.5 px-3 rounded-t-full rounded-b-full capitalize`}
-//           >
-//             {status}
-//           </span> */}
-//         </td>
-//         <td>
-//           <Menu control={<List size={20} />}>
-//             <Menu.Item onClick={() => handleStatus("approved")}>
-//               Approve
-//             </Menu.Item>
-//             <Menu.Item onClick={() => handleStatus("rejected")}>
-//               Reject
-//             </Menu.Item>
-//             <Divider />
-//             <Menu.Item onClick={() => setIsOpen(true)}>Details</Menu.Item>
-//           </Menu>
-//         </td>
-//       </tr>
-//     </>
-//   );
-// };
-
-// const getAttendances = async (token: string | null) => {
-//   if (token) {
-//     const data = await axios.get(`${process.env.REACT_APP_API_URL}/check/`, {
-//       headers: {
-//         Authorization: `Bearer ${token}`,
-//       },
-//     });
-//     return data;
-//   }
-// };
-// const DashboardAdminCheckIns = () => {
-//   const { state } = useContext(AuthContext);
-//   const { token } = state;
-
-//   const [isAttendences, setIsAttendences] = useState<AttendancesProps[]>();
-//   const [activePage, setPage] = useState<number>(1);
-//   const [totalPage, setTotalPage] = useState<number>(1);
-//   const tablePerPage = 6;
-//   const [isEmployee, setIsEmployee] = useState<AttendancesProps[]>();
-//   // range date, whether to use?
-
-//   const [filteredByOrder, setFilteredByOrder] = useState<boolean>(false);
-
-//   const { isLoading, data, refetch, isFetching } = useQuery(
-//     "allAttendence",
-//     () => getAttendances(token)
-//   );
-
-//   useEffect(() => {
-//     if (data) {
-//       setIsEmployee(data.data.data);
-//     }
-
-//     if (isEmployee) {
-//       const num = Math.ceil(isEmployee.length / tablePerPage);
-//       setTotalPage(num);
-//       const dataAttends = isEmployee.slice(
-//         (activePage - 1) * tablePerPage,
-//         activePage * tablePerPage
-//       );
-//       setIsAttendences(dataAttends);
-//     }
-//   }, [data, activePage, isEmployee]);
-
-//   const handleFilterBySort = () => {
-//     setFilteredByOrder(!filteredByOrder);
-//     setTimeout(() => {
-//       refetch();
-//     }, 200);
-//   };
-
-//   return (
-//     <>
-//       <div className="py-5 font-inter">
-//         <h1 className="text-xl font-fraunces">Employee Check Ins</h1>
-
-//         <div className="flex flex-row items-center justify-between py-4">
-//           <p>Employee not yet checked in today</p>
-//           <button
-//             className="rounded-r-xl border-2 h-full px-2 text-sm flex flex-row gap-x-2 items-center cursor-pointer transition duration-150 transform hover:scale-105 hover:bg-white"
-//             onClick={handleFilterBySort}
-//           >
-//             {filteredByOrder ? (
-//               <SortAscending size={20} />
-//             ) : (
-//               <SortDescending size={20} />
-//             )}
-//             Sort
-//           </button>
-//         </div>
-
-//         {isLoading && <LoadingOverlay visible={true} />}
-//         {isFetching && (
-//           <div className="flex justify-end">
-//             <Loader size="sm" />
-//           </div>
-//         )}
-
-//         <div className="overflow-x-auto border shadow-md first-letter:rounded-t-lg rounded-t-lg">
-//           <Table verticalSpacing="xs">
-//             <thead className="bg-gray-50">
-//               <tr>
-//                 <th>Time</th>
-//                 <th>Name</th>
-//                 <th>Location</th>
-//                 <th>Temperature</th>
-//               </tr>
-//             </thead>
-//             <tbody>
-//               {isAttendences?.map((data: AttendancesProps, i: number) => (
-//                 <TableAdmin attends={data} key={i} />
-//               ))}
-//             </tbody>
-//           </Table>
-//         </div>
-//         <div className="flex mt-8 justify-center">
-//           <Pagination
-//             page={activePage}
-//             onChange={setPage}
-//             total={totalPage}
-//             color="cyan"
-//           />
-//         </div>
-//       </div>
-//     </>
-//   );
-// };
-
-// export default DashboardAdminCheckIns;
-
 import { useContext, useEffect, useState, ChangeEvent } from "react";
 import {
   Menu,
   Divider,
   Pagination,
   Table,
-  Modal,
-  Button,
   Input,
   LoadingOverlay,
   Loader,
-  RadioGroup,
-  Radio,
+  Tabs,
 } from "@mantine/core";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import moment from "moment";
 import axios, { AxiosError, AxiosResponse } from "axios";
 import { AuthContext } from "../../../context/AuthContext";
-import {
-  Check,
-  List,
-  SortAscending,
-  SortDescending,
-  XCircle,
-} from "phosphor-react";
+import { Check, SortAscending, SortDescending, XCircle } from "phosphor-react";
 import { useNotifications } from "@mantine/notifications";
 import { AttendancesProps } from "../../../types/type";
+import DefaultEmptyState from "../../../components/EmptyStates";
 
 type PropsTable = {
   attends: AttendancesProps;
 };
-type ModalRequestProps = {
-  attends: AttendancesProps;
-  mutation?: any;
+export type PostCheckInProps = {
   token: string | null;
-  isOpen: boolean;
-  setIsOpen: (arg: boolean) => void;
-};
-type ApprovedPost = {
-  id: string;
-  token: string | null;
-  status: string;
-  notes?: string;
+  attendance_id: string;
+  temperature: number | undefined;
 };
 
-const postStatusAttends = async (approved: ApprovedPost) => {
-  const { token, id, status, notes } = approved;
-
-  const response = await axios
-    .put(
-      `${process.env.REACT_APP_API_URL}/attendances/`,
-      { id: id, status: status, notes: notes },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    )
-    .then((response: AxiosResponse) => {
-      return response;
-    })
-    .catch((error: AxiosError) => {
-      return error.response?.data?.meta.message;
-    });
-
-  return response;
-};
-
-const ModalRequest = ({
-  attends,
-  mutation,
+const postCheckIn = async ({
   token,
-  isOpen,
-  setIsOpen,
-}: ModalRequestProps) => {
-  const [valueStatus, setValueStatus] = useState<string>("approved");
-  const [isDescription, setIsDescription] = useState<string>();
-  const { id, office, employee, nik } = attends;
-
-  const handleRequest = async () => {
-    const approved = {
-      id: id,
-      token: token,
-      notes: isDescription ? isDescription : "",
-      status: valueStatus,
-    };
-    await mutation.mutate(approved);
-    setTimeout(() => {
-      setIsDescription("");
-    }, 300);
-  };
-
-  return (
-    <Modal
-      title="Request Work from Office"
-      centered
-      styles={{
-        header: { paddingLeft: 20, paddingRight: 20, paddingTop: 10 },
-        modal: { padding: 0 },
-      }}
-      opened={isOpen}
-      onClose={() => setIsOpen(false)}
-    >
-      <>
-        <div className="flex flex-row justify-between bg-blue-100 px-4 text-sm">
-          <div className="w-1/2 flex flex-col py-4">
-            <h1>Office Location</h1>
-            <p className="font-semibold">{office}</p>
-          </div>
-        </div>
-        <div className="m-4">
-          <div className=" p-2 border rounded-md flex flex-row justify-between text-sm">
-            <div className="w-1/2 flex flex-col">
-              <h1>Name</h1>
-              <p className="font-semibold">{employee}</p>
-            </div>
-            <div className="w-1/2 flex flex-col">
-              <h1>NIK</h1>
-              <p className="font-semibold">{nik}</p>
-            </div>
-          </div>
-          <div className="flex justify-center my-4">
-            <div>
-              <RadioGroup
-                value={valueStatus}
-                onChange={setValueStatus}
-                color="dark"
-                className="flex justify-center py-3"
-                required
-              >
-                <Radio value="approved" className="border p-2">
-                  Approve
-                </Radio>
-
-                <Radio value="rejected" className="border p-2">
-                  Reject
-                </Radio>
-              </RadioGroup>
-            </div>
-          </div>
-          <div className="flex flex-col justify-between gap-y-1 text-sm my-3">
-            <label className="font-semibold">Description</label>
-            <Input
-              onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                setIsDescription(e.target.value)
-              }
-            />
-          </div>
-
-          <div className="py-4 flex justify-end gap-x-4">
-            <Button onClick={() => setIsOpen(false)} variant="outline">
-              Back
-            </Button>
-            <Button type="button" onClick={handleRequest}>
-              Confirm
-            </Button>
-          </div>
-        </div>
-      </>
-    </Modal>
-  );
+  attendance_id,
+  temperature,
+}: PostCheckInProps) => {
+  if (token) {
+    const response = await axios
+      .post(
+        `${process.env.REACT_APP_API_URL}/check/ins`,
+        {
+          attendance_id: attendance_id,
+          temperature: temperature,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      )
+      .then((response: AxiosResponse) => {
+        return response;
+      })
+      .catch((error: AxiosError) => {
+        return error.response?.data?.meta.message;
+      });
+    return response;
+  }
 };
-const TableAdmin = ({ attends }: any) => {
+
+const TableNotCheckIn = ({ attends }: PropsTable) => {
   const queryClient = useQueryClient();
   const { state } = useContext(AuthContext);
   const { token } = state;
   const notifications = useNotifications();
-  const [isOpen, setIsOpen] = useState<boolean>(false);
-  const { id, office, employee, status, user_avatar, temperature } = attends;
-  console.log(attends);
-  // style by status
-  // const styleApproved = status.toLocaleLowerCase() === "approved";
-  // const styleRejected = status.toLocaleLowerCase() === "rejected";
-  // const stylePending = status.toLocaleLowerCase() === "pending";
-  const mutation = useMutation(postStatusAttends, {
-    onSuccess: (data) => {
-      queryClient.invalidateQueries("allAttendence");
-      queryClient.invalidateQueries("attendenceByRange");
-      setIsOpen(false);
-      notifications.showNotification({
-        title: "Success",
-        message: "Change Status Request is Successfully",
-        icon: <Check size={20} />,
-      });
-    },
-    onError: async (data: any) => {
-      notifications.showNotification({
-        title: "Failed",
-        color: "red",
-        message: `${data}`,
-        icon: <XCircle className="text-white" size={32} />,
-      });
+
+  const [isTemperature, setIsTemperature] = useState<number>();
+  const { id, office, employee, status, user_avatar, user_email } = attends;
+  const mutation = useMutation(postCheckIn, {
+    onSettled: (data) => {
+      if (data.status === 200) {
+        queryClient.invalidateQueries("allAttendence");
+        queryClient.invalidateQueries("attendenceByRange");
+        notifications.showNotification({
+          title: "Success",
+          message: "Check In Employee is Successfully",
+          icon: <Check size={20} />,
+        });
+      } else {
+        notifications.showNotification({
+          title: "Failed",
+          color: "red",
+          message: `${data}`,
+          icon: <XCircle className="text-white" size={32} />,
+        });
+      }
     },
   });
 
-  const handleStatus = async (e: string) => {
-    const approved = {
-      id: id,
+  const handleCheckIn = async () => {
+    await mutation.mutate({
       token: token,
-      status: e,
-    };
-    await mutation.mutate(approved);
+      attendance_id: id,
+      temperature: isTemperature,
+    });
   };
 
   return (
     <>
-      <ModalRequest
-        attends={attends}
-        isOpen={isOpen}
-        setIsOpen={setIsOpen}
-        token={token}
-        mutation={mutation}
-      />
       <tr className="bg-white text-gray-900">
-        <td>{temperature}</td>
-        <td>{temperature}</td>
-        <td>{temperature}</td>
-        <td>{temperature}</td>
+        <td className="capitalize flex flex-row space-x-2 items-center">
+          <img
+            src={`${
+              user_avatar ? user_avatar : "/apple-touch-icon.png"
+            }?${Date.now()}`}
+            alt="logo"
+            className="w-10 h-10 rounded-full"
+          />
+          <div className="flex flex-col">
+            <p>{employee}</p>
+            <p>{user_email}</p>
+          </div>
+        </td>
+        <td className="font-semibold">{office}</td>
+
+        <td>
+          <span
+            className="
+               bg-green-200 text-green-900 p-0.5 px-3 rounded-t-full rounded-b-full capitalize"
+          >
+            {status}
+          </span>
+        </td>
+        <td>
+          <Menu closeOnItemClick={false} control={<div>Check In</div>}>
+            <Menu.Item>
+              <Input
+                onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                  setIsTemperature(+e.target.value)
+                }
+              />
+            </Menu.Item>
+            <Divider />
+            <Menu.Item onClick={handleCheckIn}>Details</Menu.Item>
+          </Menu>
+        </td>
+      </tr>
+    </>
+  );
+};
+type CheckInsState = {
+  attendance_id: string;
+  id: string;
+  is_checkins: boolean;
+  is_checkouts: boolean;
+  updated_at: string;
+  office_name: string;
+  created_at: string;
+  user_name: string;
+  user_email: string;
+  user_avatar: string;
+  temprature: number;
+};
+
+type CheckInProps = {
+  dataCheckIns: CheckInsState;
+};
+const TableHistoryCheckIns = ({ dataCheckIns }: CheckInProps) => {
+  const {
+    office_name,
+    created_at,
+    user_name,
+    user_avatar,
+    user_email,
+    temprature,
+  } = dataCheckIns;
+  const date = moment(created_at).format("DD MMMM YYYY");
+  const time = moment(created_at).format("hh:mm");
+  return (
+    <>
+      <tr className="bg-white text-gray-900">
+        <td>
+          <p className="text-sm text-gray-900">{date}</p>
+          <p className="text-sm text-gray-500">{time}</p>
+        </td>
+        <td className="capitalize flex flex-row space-x-2 items-center">
+          <img
+            src={`${
+              user_avatar ? user_avatar : "/apple-touch-icon.png"
+            }?${Date.now()}`}
+            alt="logo"
+            className="w-10 h-10 rounded-full"
+          />
+          <div className="flex flex-col">
+            <p>{user_name}</p>
+            <p>{user_email}</p>
+          </div>
+        </td>
+        <td>{office_name}</td>
+        <td>{temprature}</td>
       </tr>
     </>
   );
@@ -594,6 +194,9 @@ const TableAdmin = ({ attends }: any) => {
 const getAttendances = async (token: string | null) => {
   if (token) {
     const data = await axios.get(`${process.env.REACT_APP_API_URL}/check/`, {
+      params: {
+        order_by: "desc",
+      },
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -601,40 +204,92 @@ const getAttendances = async (token: string | null) => {
     return data;
   }
 };
+type AttendanceDayProps = {
+  token: string | null;
+  date: string | Date;
+};
+const getAttendancesToday = async ({ token, date }: AttendanceDayProps) => {
+  if (token) {
+    const data = await axios.get(
+      `${process.env.REACT_APP_API_URL}/attendances/`,
+      {
+        params: {
+          date_start: date,
+          date_end: date,
+          status: "approved",
+        },
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return data;
+  }
+};
 const DashboardAdminCheckIns = () => {
   const { state } = useContext(AuthContext);
   const { token } = state;
-
-  const [isAttendences, setIsAttendences] = useState<AttendancesProps[]>();
-  const [activePage, setPage] = useState<number>(1);
+  const [isAttendances, setIsAttendances] = useState<AttendancesProps[]>();
+  const [isCheckIns, setIsCheckIns] = useState<CheckInsState[]>();
+  const [activePageCheckIns, setActivePageCheckIns] = useState<number>(1);
+  const [activePageNotCheckIns, setActivePageNotCheckIns] = useState<number>(1);
   const [totalPage, setTotalPage] = useState<number>(1);
+  const [totalPageNotCheckIns, setTotalPageNotCheckIns] = useState<number>(1);
   const tablePerPage = 6;
-  const [isEmployee, setIsEmployee] = useState<AttendancesProps[]>();
-  // range date, whether to use?
-
+  const [isEmployeeCheckIns, setIsEmployeeCheckIns] =
+    useState<CheckInsState[]>();
+  const [isAttendancesToday, setIsAttendancesToday] = useState<
+    AttendancesProps[] | undefined
+  >();
   const [filteredByOrder, setFilteredByOrder] = useState<boolean>(false);
-
-  const { isLoading, data, refetch, isFetching } = useQuery(
-    "allAttendence",
-    () => getAttendances(token)
+  const { isLoading, data, refetch, isFetching } = useQuery("getCheckIns", () =>
+    getAttendances(token)
   );
-
+  const dateNow = moment(Date.now()).format("YYYY-MM-DD");
+  const { data: dataAttendants } = useQuery("attendancesToday", () =>
+    getAttendancesToday({
+      token: token,
+      date: dateNow,
+    })
+  );
   useEffect(() => {
     if (data) {
-      setIsEmployee(data.data.data);
+      setIsEmployeeCheckIns(data.data.data);
     }
-
-    if (isEmployee) {
-      const num = Math.ceil(isEmployee.length / tablePerPage);
-      setTotalPage(num);
-      const dataAttends = isEmployee.slice(
-        (activePage - 1) * tablePerPage,
-        activePage * tablePerPage
+    if (isEmployeeCheckIns) {
+      const numPageCheckIns = Math.ceil(
+        isEmployeeCheckIns?.length / tablePerPage
       );
-      setIsAttendences(dataAttends);
+      setTotalPage(numPageCheckIns);
+      const dataCheckIns = isEmployeeCheckIns.slice(
+        (activePageCheckIns - 1) * tablePerPage,
+        activePageCheckIns * tablePerPage
+      );
+      setIsCheckIns(dataCheckIns);
     }
-  }, [data, activePage, isEmployee]);
-
+  }, [
+    data,
+    activePageCheckIns,
+    isEmployeeCheckIns,
+    dataAttendants,
+    isAttendancesToday,
+  ]);
+  useEffect(() => {
+    if (dataAttendants) {
+      setIsAttendancesToday(dataAttendants?.data?.data);
+    }
+    if (isAttendancesToday) {
+      const numPageNotCheckIns = Math.ceil(
+        isAttendancesToday?.length / tablePerPage
+      );
+      setTotalPageNotCheckIns(numPageNotCheckIns);
+      const dataAttends = isAttendancesToday?.slice(
+        (activePageNotCheckIns - 1) * tablePerPage,
+        activePageNotCheckIns * tablePerPage
+      );
+      setIsAttendances(dataAttends);
+    }
+  }, [activePageNotCheckIns, dataAttendants, isAttendancesToday]);
   const handleFilterBySort = () => {
     setFilteredByOrder(!filteredByOrder);
     setTimeout(() => {
@@ -647,8 +302,7 @@ const DashboardAdminCheckIns = () => {
       <div className="py-5 font-inter">
         <h1 className="text-xl font-fraunces">Employee Check Ins</h1>
 
-        <div className="flex flex-row items-center justify-between py-4">
-          <p>Employee not yet checked in today</p>
+        <div className="flex flex-row items-center justify-end py-4">
           <button
             className="rounded-r-xl border-2 h-full px-2 text-sm flex flex-row gap-x-2 items-center cursor-pointer transition duration-150 transform hover:scale-105 hover:bg-white"
             onClick={handleFilterBySort}
@@ -669,31 +323,72 @@ const DashboardAdminCheckIns = () => {
           </div>
         )}
 
-        <div className="overflow-x-auto border shadow-md first-letter:rounded-t-lg rounded-t-lg">
-          <Table verticalSpacing="xs">
-            <thead className="bg-gray-50">
-              <tr>
-                <th>Time</th>
-                <th>Name</th>
-                <th>Location</th>
-                <th>Temperature</th>
-              </tr>
-            </thead>
-            <tbody>
-              {isAttendences?.map((data: AttendancesProps, i: number) => (
-                <TableAdmin attends={data} key={i} />
-              ))}
-            </tbody>
-          </Table>
-        </div>
-        <div className="flex mt-8 justify-center">
-          <Pagination
-            page={activePage}
-            onChange={setPage}
-            total={totalPage}
-            color="cyan"
-          />
-        </div>
+        <Tabs>
+          <Tabs.Tab label="Employees Not Yet Checked In Today">
+            <div className="overflow-x-auto border shadow-md first-letter:rounded-t-lg rounded-t-lg">
+              <Table verticalSpacing="xs">
+                {isCheckIns?.length === 0 ? (
+                  <>
+                    <DefaultEmptyState />
+                  </>
+                ) : (
+                  <>
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th>Name</th>
+                        <th>Location</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {isAttendances?.map(
+                        (data: AttendancesProps, i: number) => (
+                          <TableNotCheckIn attends={data} key={i} />
+                        )
+                      )}
+                    </tbody>
+                  </>
+                )}
+              </Table>
+            </div>
+            <div className="flex mt-8 justify-center">
+              <Pagination
+                page={activePageNotCheckIns}
+                onChange={setActivePageNotCheckIns}
+                total={totalPageNotCheckIns}
+                color="cyan"
+              />
+            </div>
+          </Tabs.Tab>
+          <Tabs.Tab label="Check Ins History">
+            <div className="overflow-x-auto border shadow-md first-letter:rounded-t-lg rounded-t-lg">
+              <Table verticalSpacing="xs">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th>Time</th>
+                    <th>Name</th>
+                    <th>Location</th>
+                    <th>Temperature</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {isCheckIns?.map((data: CheckInsState, i: number) => (
+                    <TableHistoryCheckIns dataCheckIns={data} key={i} />
+                  ))}
+                </tbody>
+              </Table>
+            </div>
+            <div className="flex mt-8 justify-center">
+              <Pagination
+                page={activePageCheckIns}
+                onChange={setActivePageCheckIns}
+                total={totalPage}
+                color="cyan"
+              />
+            </div>
+          </Tabs.Tab>
+        </Tabs>
       </div>
     </>
   );
