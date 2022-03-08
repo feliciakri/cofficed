@@ -23,6 +23,10 @@ import { useNotifications } from "@mantine/notifications";
 import { useContext, useEffect, useState } from "react";
 import { useQuery } from "react-query";
 import { AuthContext } from "../../../context/AuthContext";
+import {
+  CategoryState,
+  LocationState,
+} from "../../dashboard-employee/schedule";
 
 type InputAddEmployee = {
   name: string;
@@ -33,6 +37,7 @@ type InputAddEmployee = {
   role: string;
   office_id: string;
 };
+
 const fetchCategory = async () => {
   const { data } = await axios.get(`${process.env.REACT_APP_API_URL}/offices/`);
   return data.data;
@@ -40,12 +45,12 @@ const fetchCategory = async () => {
 export default function AddEmployee() {
   const { state } = useContext(AuthContext);
   const { data } = useQuery("getCategory", fetchCategory);
-  const [isLocation, setIsLocation] = useState<any>();
+  const [isLocation, setIsLocation] = useState<CategoryState[]>();
 
   useEffect(() => {
     if (data) {
       setIsLocation(
-        data?.map((location: any) => ({
+        data?.map((location: LocationState) => ({
           value: `${location.id}`,
           label: `${location.name}`,
         }))
