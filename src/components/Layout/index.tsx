@@ -236,7 +236,7 @@ const Layout = () => {
                   position="top"
                   control={
                     <UserButton
-                      avatar={profile?.avatar}
+                      avatar={`${profile?.avatar}?${Date.now()}`}
                       name={profile?.name}
                       email={profile?.email}
                       icon={<CaretRight size={30} />}

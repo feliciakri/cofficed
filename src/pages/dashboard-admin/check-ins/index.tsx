@@ -63,12 +63,12 @@ const TableNotCheckIn = ({ attends }: PropsTable) => {
   const notifications = useNotifications();
 
   const [isTemperature, setIsTemperature] = useState<number>();
-  const { id, office, employee, status, user_avatar, user_email } = attends;
+  const { id, office, employee, user_avatar, user_email } = attends;
   const mutation = useMutation(postCheckIn, {
     onSettled: (data) => {
       if (data.status === 200) {
-        queryClient.invalidateQueries("allAttendence");
-        queryClient.invalidateQueries("attendenceByRange");
+        queryClient.invalidateQueries("getCheckIns");
+        queryClient.invalidateQueries("attendancesToday");
         notifications.showNotification({
           title: "Success",
           message: "Check In Employee is Successfully",
@@ -114,9 +114,9 @@ const TableNotCheckIn = ({ attends }: PropsTable) => {
         <td>
           <span
             className="
-               bg-green-200 text-green-900 p-0.5 px-3 rounded-t-full rounded-b-full capitalize"
+               bg-gray-100 p-0.5 px-3 rounded-t-full rounded-b-full capitalize"
           >
-            {status}
+            Not Checked In
           </span>
         </td>
         <td>
@@ -194,9 +194,6 @@ const TableHistoryCheckIns = ({ dataCheckIns }: CheckInProps) => {
 const getAttendances = async (token: string | null) => {
   if (token) {
     const data = await axios.get(`${process.env.REACT_APP_API_URL}/check/`, {
-      params: {
-        order_by: "desc",
-      },
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -207,8 +204,13 @@ const getAttendances = async (token: string | null) => {
 type AttendanceDayProps = {
   token: string | null;
   date: string | Date;
+  order_by: string;
 };
-const getAttendancesToday = async ({ token, date }: AttendanceDayProps) => {
+const getAttendancesToday = async ({
+  token,
+  date,
+  order_by,
+}: AttendanceDayProps) => {
   if (token) {
     const data = await axios.get(
       `${process.env.REACT_APP_API_URL}/attendances/`,
@@ -217,6 +219,7 @@ const getAttendancesToday = async ({ token, date }: AttendanceDayProps) => {
           date_start: date,
           date_end: date,
           status: "approved",
+          order_by: order_by,
         },
         headers: {
           Authorization: `Bearer ${token}`,
@@ -241,20 +244,26 @@ const DashboardAdminCheckIns = () => {
   const [isAttendancesToday, setIsAttendancesToday] = useState<
     AttendancesProps[] | undefined
   >();
+  const [dataFilteredNotCheckins, setDataFilteredNotCheckIns] = useState<
+    AttendancesProps[] | undefined
+  >();
   const [filteredByOrder, setFilteredByOrder] = useState<boolean>(false);
-  const { isLoading, data, refetch, isFetching } = useQuery("getCheckIns", () =>
+  const { isLoading, data, isFetching } = useQuery("getCheckIns", () =>
     getAttendances(token)
   );
   const dateNow = moment(Date.now()).format("YYYY-MM-DD");
-  const { data: dataAttendants } = useQuery("attendancesToday", () =>
-    getAttendancesToday({
-      token: token,
-      date: dateNow,
-    })
+  const { data: dataAttendants, refetch: refectNotCheckIns } = useQuery(
+    "attendancesToday",
+    () =>
+      getAttendancesToday({
+        token: token,
+        date: dateNow,
+        order_by: filteredByOrder ? "asc" : "desc",
+      })
   );
   useEffect(() => {
-    if (data) {
-      setIsEmployeeCheckIns(data.data.data);
+    if (data?.data) {
+      setIsEmployeeCheckIns(data?.data?.data);
     }
     if (isEmployeeCheckIns) {
       const numPageCheckIns = Math.ceil(
@@ -274,26 +283,58 @@ const DashboardAdminCheckIns = () => {
     dataAttendants,
     isAttendancesToday,
   ]);
+
+  useEffect(() => {
+    // Filter by days
+    const filteredCheckIns = isEmployeeCheckIns
+      ?.filter(
+        (data) => moment(data.created_at).format("YYYY-MM-DD") === dateNow
+      )
+      .map((data) => {
+        return data;
+      });
+
+    // Compare Attendance Now to filtered Check Ins
+    const filteredIsNotCheckIns = isAttendancesToday
+      ?.filter(
+        (attendances) =>
+          !filteredCheckIns?.find(
+            (check_ins) => attendances.id === check_ins.attendance_id
+          )
+      )
+      .map((data) => {
+        return data;
+      });
+
+    setDataFilteredNotCheckIns(filteredIsNotCheckIns);
+  }, [dateNow, isAttendancesToday, isEmployeeCheckIns]);
+
   useEffect(() => {
     if (dataAttendants) {
       setIsAttendancesToday(dataAttendants?.data?.data);
     }
-    if (isAttendancesToday) {
+    if (dataFilteredNotCheckins) {
       const numPageNotCheckIns = Math.ceil(
-        isAttendancesToday?.length / tablePerPage
+        dataFilteredNotCheckins?.length / tablePerPage
       );
       setTotalPageNotCheckIns(numPageNotCheckIns);
-      const dataAttends = isAttendancesToday?.slice(
+      const dataAttends = dataFilteredNotCheckins?.slice(
         (activePageNotCheckIns - 1) * tablePerPage,
         activePageNotCheckIns * tablePerPage
       );
       setIsAttendances(dataAttends);
     }
-  }, [activePageNotCheckIns, dataAttendants, isAttendancesToday]);
+  }, [
+    activePageNotCheckIns,
+    dataAttendants,
+    dateNow,
+    dataFilteredNotCheckins,
+    isEmployeeCheckIns,
+  ]);
   const handleFilterBySort = () => {
     setFilteredByOrder(!filteredByOrder);
     setTimeout(() => {
-      refetch();
+      refectNotCheckIns();
     }, 200);
   };
 
@@ -326,31 +367,25 @@ const DashboardAdminCheckIns = () => {
         <Tabs>
           <Tabs.Tab label="Employees Not Yet Checked In Today">
             <div className="overflow-x-auto border shadow-md first-letter:rounded-t-lg rounded-t-lg">
-              <Table verticalSpacing="xs">
-                {isCheckIns?.length === 0 ? (
-                  <>
-                    <DefaultEmptyState />
-                  </>
-                ) : (
-                  <>
-                    <thead className="bg-gray-50">
-                      <tr>
-                        <th>Name</th>
-                        <th>Location</th>
-                        <th>Status</th>
-                        <th>Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {isAttendances?.map(
-                        (data: AttendancesProps, i: number) => (
-                          <TableNotCheckIn attends={data} key={i} />
-                        )
-                      )}
-                    </tbody>
-                  </>
-                )}
-              </Table>
+              {!isAttendances ? (
+                <DefaultEmptyState />
+              ) : (
+                <Table verticalSpacing="xs">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th>Name</th>
+                      <th>Location</th>
+                      <th>Status</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {isAttendances?.map((data: AttendancesProps, i: number) => (
+                      <TableNotCheckIn attends={data} key={i} />
+                    ))}
+                  </tbody>
+                </Table>
+              )}
             </div>
             <div className="flex mt-8 justify-center">
               <Pagination
