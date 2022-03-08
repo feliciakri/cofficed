@@ -35,14 +35,14 @@ const fetchCheckIn = async (token: string | null) => {
 	}
 };
 
-const postCheckIn = async ({ token, attendance_id, temperature }: any) => {
+const postCheckIn = async ({ token, attendance_id, temprature }: any) => {
 	if (token) {
 		const response = await axios
 			.post(
 				`${process.env.REACT_APP_API_URL}/check/ins`,
 				{
 					attendance_id: attendance_id,
-					temperature: +temperature,
+					temprature: +temprature,
 				},
 				{
 					headers: {
@@ -218,7 +218,7 @@ const DashboardEmployee = () => {
 		await mutation.mutate({
 			token: token,
 			attendance_id: attendanceId,
-			temperature: isTemperature,
+			temprature: isTemperature,
 		});
 	};
 

@@ -24,13 +24,13 @@ type PropsTable = {
 export type PostCheckInProps = {
 	token: string | null;
 	attendance_id: string;
-	temperature: number | undefined;
+	temprature: number | undefined;
 };
 
 const postCheckIn = async ({
 	token,
 	attendance_id,
-	temperature,
+	temprature,
 }: PostCheckInProps) => {
 	if (token) {
 		const response = await axios
@@ -38,7 +38,7 @@ const postCheckIn = async ({
 				`${process.env.REACT_APP_API_URL}/check/ins`,
 				{
 					attendance_id: attendance_id,
-					temperature: temperature,
+					temprature: temprature,
 				},
 				{
 					headers: {
@@ -89,7 +89,7 @@ const TableNotCheckIn = ({ attends }: PropsTable) => {
 		await mutation.mutate({
 			token: token,
 			attendance_id: id,
-			temperature: isTemperature,
+			temprature: isTemperature,
 		});
 	};
 
@@ -132,7 +132,7 @@ const TableNotCheckIn = ({ attends }: PropsTable) => {
 							/>
 						</Menu.Item>
 						<Divider />
-						<Menu.Item onClick={handleCheckIn}>Details</Menu.Item>
+						<Menu.Item onClick={handleCheckIn}>Submit</Menu.Item>
 					</Menu>
 				</td>
 			</tr>
@@ -150,7 +150,7 @@ type CheckInsState = {
 	user_name: string;
 	user_email: string;
 	user_avatar: string;
-	temperature: number;
+	temprature: number;
 };
 
 type CheckInProps = {
@@ -163,7 +163,7 @@ const TableHistoryCheckIns = ({ dataCheckIns }: CheckInProps) => {
 		user_name,
 		user_avatar,
 		user_email,
-		temperature,
+		temprature,
 	} = dataCheckIns;
 	const date = moment(created_at).format("DD MMMM YYYY");
 	const time = moment(created_at).format("hh:mm");
@@ -188,7 +188,7 @@ const TableHistoryCheckIns = ({ dataCheckIns }: CheckInProps) => {
 					</div>
 				</td>
 				<td>{office_name}</td>
-				<td>{temperature}</td>
+				<td>{temprature}</td>
 			</tr>
 		</>
 	);
