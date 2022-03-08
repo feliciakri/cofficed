@@ -30,11 +30,9 @@ import {
   Menu,
 } from "@mantine/core";
 import { forwardRef, useState } from "react";
-
 import { AuthContext } from "../../context/AuthContext";
 import { useContext } from "react";
 import { AuthActionKind } from "../../context/AuthReducer";
-import Notifications from "./Notifications";
 
 const Layout = () => {
   const { state } = useContext(AuthContext);
@@ -205,6 +203,17 @@ const Layout = () => {
                     WFO Requests
                   </NavLink>
                   <NavLink
+                    to="/dashboard-admin/check-ins"
+                    className={({ isActive }) =>
+                      `${
+                        isActive ? "bg-gray-200" : ""
+                      } flex flex-row items-center w-full hover:bg-gray-200 cursor-point py-3 px-2 my-1 gap-x-4 rounded-md`
+                    }
+                  >
+                    <UserPlus size={20} />
+                    Check Ins
+                  </NavLink>
+                  <NavLink
                     to="/dashboard-admin/add-employee"
                     className={({ isActive }) =>
                       `${
@@ -227,7 +236,7 @@ const Layout = () => {
                   position="top"
                   control={
                     <UserButton
-                      avatar={profile?.avatar}
+                      avatar={`${profile?.avatar}?${Date.now()}`}
                       name={profile?.name}
                       email={profile?.email}
                       icon={<CaretRight size={30} />}
@@ -271,7 +280,6 @@ const Layout = () => {
                 </NavLink>
               </div>
               <div className="flex flex-row gap-x-3 items-center">
-                <Notifications />
                 <MediaQuery largerThan="sm" styles={{ display: "none" }}>
                   <Burger
                     opened={opened}
