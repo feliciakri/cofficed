@@ -228,7 +228,7 @@ const DashboardEmployee = () => {
 			<h1 className="text-3xl font-fraunces">
 				Hello {profile?.name}, 👋
 			</h1>
-			<div className="mt-5 grid grid-flow-col auto-cols-max gap-4 md:grid-cols-1">
+			<div className="mt-5 grid grid-flow-col auto-cols-max gap-4 ">
 				<div>
 					<h2>Your WFO Schedule</h2>
 					<MyScheduleComponent
