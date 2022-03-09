@@ -80,6 +80,7 @@ That contains the endpoint for the backend
 -   [Create React App](https://create-react-app.dev/)
 -   [Lottie React](https://github.com/Gamote/lottie-react)
 -   [Tumbleweed animation by Vukasin Stanic](https://lottiefiles.com/58407-tumbleweed)
+-   [Hello animation by Jusung](https://lottiefiles.com/38459-hello)
 
 ## 👤 Authors
 
