@@ -154,7 +154,7 @@ const DashboardAdmin = () => {
 	const [isOpen, setIsOpen] = useState<boolean>(false);
 
 	// Responsive Calendar
-	const isDekstop = useMediaQuery("(min-width: 1200px)");
+	const isDesktop = useMediaQuery("(min-width: 1200px)");
 	const isTablet = useMediaQuery("(max-width: 1200px)");
 	const isMobile = useMediaQuery("(max-width: 600px)");
 	const { data } = useQuery("getCategory", fetchCategory);
@@ -269,7 +269,7 @@ const DashboardAdmin = () => {
 					onHandle={handleChangeCalendar}
 					isMobile={isMobile}
 					isTablet={isTablet}
-					isDesktop={isDekstop}
+					isDesktop={isDesktop}
 					isQuota={true}
 				/>
 			</div>

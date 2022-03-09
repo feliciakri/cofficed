@@ -1,10 +1,12 @@
-import { Alert, Button, Group, Input } from "@mantine/core";
+import { Alert, Button, Grid, Group, Input, Tooltip } from "@mantine/core";
 import { useNotifications } from "@mantine/notifications";
 import axios, { AxiosError, AxiosResponse } from "axios";
 import moment from "moment";
 import { Bus, Check, HourglassMedium, SunDim, XCircle } from "phosphor-react";
 import { useContext, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "react-query";
+import MyScheduleComponent from "../../components/Calendar/schedule";
+import ScheduleComponent from "../../components/Calendar/schedule";
 import { AuthContext } from "../../context/AuthContext";
 import { AttendancesProps } from "../../types/type";
 
@@ -151,7 +153,7 @@ const DashboardEmployee = () => {
 		fetchCheckIn(token)
 	);
 
-	const { data: attendaceApprove } = useQuery("getAttendanceApproved", () =>
+	const { data: attendanceApprove } = useQuery("getAttendanceApproved", () =>
 		fetchAttendanceUser({
 			token: token,
 			status: "approved",
@@ -196,7 +198,7 @@ const DashboardEmployee = () => {
 		},
 	});
 
-	const attendanceFilter = attendaceApprove?.current_attendances
+	const attendanceFilter = attendanceApprove?.current_attendances
 		?.filter(
 			(data: AttendancesProps) =>
 				moment(data.day).format("YYYY-MM-DD") === date
@@ -221,13 +223,67 @@ const DashboardEmployee = () => {
 			temprature: isTemperature,
 		});
 	};
-
 	return (
 		<div>
 			<h1 className="text-3xl font-fraunces">
 				Hello {profile?.name}, 👋
 			</h1>
-			<div className="grid grid-cols-1 lg:grid-cols-3 gap-y-4 my-10">
+			<div className="mt-5 grid grid-flow-col auto-cols-max gap-4 ">
+				<div>
+					<h2>Your WFO Schedule</h2>
+					<MyScheduleComponent
+						data={attendanceApprove?.current_attendances}
+					/>
+				</div>
+				<div className="col-span-2">
+					<div>
+						{checkInId && (
+							<h1 className="text-3xl font-fraunces">
+								You have checked in for today! 🎉
+								<br /> Have a cup of coffee and enjoy your day
+								☕💻
+							</h1>
+						)}
+						{!attendanceId && (
+							<h1 className="text-3xl font-fraunces">
+								Enjoy your WFH today! 🏠
+							</h1>
+						)}
+
+						{attendanceId && !checkInId && (
+							<>
+								<h1 className="text-3xl font-fraunces">
+									Welcome to the office, please check in!
+								</h1>
+								<div className="my-4 flex flex-row gap-x-2 items-end">
+									<div>
+										<label>Temperature</label>
+										<Input
+											type="number"
+											placeholder="Temperature"
+											onChange={(
+												e: React.ChangeEvent<HTMLInputElement>
+											) =>
+												setIsTemperature(
+													+e.target.value
+												)
+											}
+										/>
+									</div>
+									<Button
+										style={{ backgroundColor: "#A5D8FF" }}
+										onClick={handleCheckIn}
+									>
+										Check In 🌡️✅
+									</Button>
+								</div>
+							</>
+						)}
+					</div>
+				</div>
+			</div>
+
+			<div className="grid grid-cols-1 lg:grid-cols-3 my-10">
 				<CardDashboard
 					isCheckIn={true}
 					isPending={false}
@@ -246,45 +302,6 @@ const DashboardEmployee = () => {
 					isWFO={true}
 					data={allAttendance}
 				/>
-			</div>
-			<div className="my-2">
-				{checkInId && (
-					<h1 className="text-3xl font-fraunces">
-						You have checked in for today! 🎉
-						<br /> Have a cup of coffee and enjoy your day ☕💻
-					</h1>
-				)}
-				{!attendanceId && (
-					<h1 className="text-3xl font-fraunces">
-						Enjoy your WFH today! 🏠
-					</h1>
-				)}
-
-				{attendanceId && !checkInId && (
-					<>
-						<h1 className="text-3xl font-fraunces">
-							Welcome to the office, please check in!
-						</h1>
-						<div className="my-4 flex flex-row gap-x-2 items-end">
-							<div className="w-1/6">
-								<label>Temperature</label>
-								<Input
-									type="number"
-									placeholder="Temperature"
-									onChange={(
-										e: React.ChangeEvent<HTMLInputElement>
-									) => setIsTemperature(+e.target.value)}
-								/>
-							</div>
-							<Button
-								style={{ backgroundColor: "#A5D8FF" }}
-								onClick={handleCheckIn}
-							>
-								Check In 🌡️✅
-							</Button>
-						</div>
-					</>
-				)}
 			</div>
 		</div>
 	);
