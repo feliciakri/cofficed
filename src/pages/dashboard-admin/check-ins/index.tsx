@@ -18,6 +18,9 @@ import { useNotifications } from "@mantine/notifications";
 import { AttendancesProps } from "../../../types/type";
 import DefaultEmptyState from "../../../components/EmptyStates";
 
+type PropsTable = {
+  attends: AttendancesProps;
+};
 export type PostCheckInProps = {
   token: string | null;
   attendance_id: string;
@@ -53,14 +56,14 @@ const postCheckIn = async ({
   }
 };
 
-const TableNotCheckIn = ({ attends }: any) => {
+const TableNotCheckIn = ({ attends }: PropsTable) => {
   const queryClient = useQueryClient();
   const { state } = useContext(AuthContext);
   const { token } = state;
   const notifications = useNotifications();
 
   const [isTemperature, setIsTemperature] = useState<number>();
-  const { id, office_name, employee, user_avatar, user_email } = attends;
+  const { id, office, employee, user_avatar, user_email } = attends;
   const mutation = useMutation(postCheckIn, {
     onSettled: (data) => {
       if (data.status === 200) {
@@ -106,7 +109,7 @@ const TableNotCheckIn = ({ attends }: any) => {
             <p>{user_email}</p>
           </div>
         </td>
-        <td className="font-semibold">{office_name}</td>
+        <td className="font-semibold">{office}</td>
 
         <td>
           <span
@@ -210,7 +213,7 @@ const getAttendancesToday = async ({
 }: AttendanceDayProps) => {
   if (token) {
     const data = await axios.get(
-      `${process.env.REACT_APP_API_URL}/attendances/ischeckin`,
+      `${process.env.REACT_APP_API_URL}/attendances/`,
       {
         params: {
           date_start: date,
@@ -248,7 +251,6 @@ const DashboardAdminCheckIns = () => {
   const { isLoading, data, isFetching } = useQuery("getCheckIns", () =>
     getAttendances(token)
   );
-
   const dateNow = moment(Date.now()).format("YYYY-MM-DD");
   const { data: dataAttendants, refetch: refectNotCheckIns } = useQuery(
     "attendancesToday",
@@ -259,7 +261,6 @@ const DashboardAdminCheckIns = () => {
         order_by: filteredByOrder ? "asc" : "desc",
       })
   );
-
   useEffect(() => {
     if (data?.data) {
       setIsEmployeeCheckIns(data?.data?.data);
@@ -275,12 +276,35 @@ const DashboardAdminCheckIns = () => {
       );
       setIsCheckIns(dataCheckIns);
     }
-  }, [data, activePageCheckIns, isEmployeeCheckIns, dataAttendants]);
+  }, [
+    data,
+    activePageCheckIns,
+    isEmployeeCheckIns,
+    dataAttendants,
+    isAttendancesToday,
+  ]);
 
   useEffect(() => {
-    const filteredIsNotCheckIns = isAttendancesToday?.filter((data: any) => {
-      return data.status_checkin !== "Checkin";
-    });
+    // Filter by days
+    const filteredCheckIns = isEmployeeCheckIns
+      ?.filter(
+        (data) => moment(data.created_at).format("YYYY-MM-DD") === dateNow
+      )
+      .map((data) => {
+        return data;
+      });
+
+    // Compare Attendance Now to filtered Check Ins
+    const filteredIsNotCheckIns = isAttendancesToday
+      ?.filter(
+        (attendances) =>
+          !filteredCheckIns?.find(
+            (check_ins) => attendances.id === check_ins.attendance_id
+          )
+      )
+      .map((data) => {
+        return data;
+      });
 
     setDataFilteredNotCheckIns(filteredIsNotCheckIns);
   }, [dateNow, isAttendancesToday, isEmployeeCheckIns]);
@@ -343,7 +367,7 @@ const DashboardAdminCheckIns = () => {
         <Tabs>
           <Tabs.Tab label="Employees Not Yet Checked In Today">
             <div className="overflow-x-auto border shadow-md first-letter:rounded-t-lg rounded-t-lg">
-              {!isAttendances || isAttendances.length === 0 ? (
+              {!isAttendances ? (
                 <DefaultEmptyState />
               ) : (
                 <Table verticalSpacing="xs">
@@ -373,31 +397,38 @@ const DashboardAdminCheckIns = () => {
             </div>
           </Tabs.Tab>
           <Tabs.Tab label="Check Ins History">
-            <div className="overflow-x-auto border shadow-md first-letter:rounded-t-lg rounded-t-lg">
-              <Table verticalSpacing="xs">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th>Time</th>
-                    <th>Name</th>
-                    <th>Location</th>
-                    <th>Temperature</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {isCheckIns?.map((data: CheckInsState, i: number) => (
-                    <TableHistoryCheckIns dataCheckIns={data} key={i} />
-                  ))}
-                </tbody>
-              </Table>
-            </div>
-            <div className="flex mt-8 justify-center">
-              <Pagination
-                page={activePageCheckIns}
-                onChange={setActivePageCheckIns}
-                total={totalPage}
-                color="cyan"
-              />
-            </div>
+            {isCheckIns ? (
+              <>
+                {console.log(isCheckIns)}
+                <div className="overflow-x-auto border shadow-md first-letter:rounded-t-lg rounded-t-lg">
+                  <Table verticalSpacing="xs">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th>Time</th>
+                        <th>Name</th>
+                        <th>Location</th>
+                        <th>Temperature</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {isCheckIns?.map((data: CheckInsState, i: number) => (
+                        <TableHistoryCheckIns dataCheckIns={data} key={i} />
+                      ))}
+                    </tbody>
+                  </Table>
+                </div>
+                <div className="flex mt-8 justify-center">
+                  <Pagination
+                    page={activePageCheckIns}
+                    onChange={setActivePageCheckIns}
+                    total={totalPage}
+                    color="cyan"
+                  />
+                </div>
+              </>
+            ) : (
+              <DefaultEmptyState />
+            )}
           </Tabs.Tab>
         </Tabs>
       </div>
