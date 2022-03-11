@@ -186,7 +186,9 @@ const DashboardEmployee = () => {
                     message: "Check In Success!",
                     icon: <Check className="text-white" size={32} />,
                 });
-                console.log(isSuccess);
+                if (isSuccess) {
+                    //pass
+                }
             } else {
                 notifications.showNotification({
                     title: "Failed",
