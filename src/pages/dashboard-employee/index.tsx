@@ -186,6 +186,7 @@ const DashboardEmployee = () => {
                     message: "Check In Success!",
                     icon: <Check className="text-white" size={32} />,
                 });
+                console.log(isSuccess);
             } else {
                 notifications.showNotification({
                     title: "Failed",
@@ -272,10 +273,7 @@ const DashboardEmployee = () => {
                                             }
                                         />
                                     </div>
-                                    <Button
-                                        style={{ backgroundColor: "#A5D8FF" }}
-                                        onClick={handleCheckIn}
-                                    >
+                                    <Button onClick={handleCheckIn}>
                                         Check In 🌡️✅
                                     </Button>
                                 </div>
