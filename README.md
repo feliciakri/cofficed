@@ -12,6 +12,8 @@
 
 [Github Repository for the backend](https://github.com/HamzahAA15/group2-project-capstone)
 
+[Swagger OpenAPI](https://lazyevent.site)
+
 ## 🔮 Features
 
 -   Login and Logout
@@ -19,12 +21,13 @@
 
 #### As Employee
 
--   See dashboard of activities
+-   See dashboard of activities and future WFO schedule
 -   Check in to work
 -   Pick office to work and show quota on available dates
 -   Request WFO on certain day when quota is available
 -   See request log
--   See list of people that will be working in that day and place
+-   Sort request log by oldest and newest
+-   See list of people that will be working in that day and office
 -   Upload my vaccine certificates
 
 #### As Admin
@@ -32,9 +35,12 @@
 -   Change quota at certain dates in the calendar by office
 -   Approve and reject vaccine certificates uploaded by employees
 -   Sort vaccine certificates
--   Approve and reject WFO requests by employee
+-   Approve and reject WFO requests by employee with description
 -   Filter WFO requests
 -   Sort WFO requests
+-   Check in employees
+-   View history of employees check ins
+-   Add new employees
 
 ## 🧰 Installation
 
@@ -79,7 +85,7 @@ That contains the endpoint for the backend
 -   [MomentJS](https://momentjs.com/)
 -   [Create React App](https://create-react-app.dev/)
 -   [Lottie React](https://github.com/Gamote/lottie-react)
--   [Tumbleweed animation by Vukasin Stanic](https://lottiefiles.com/58407-tumbleweed)
+-   [Tumbleweed animation by Vukasin Stanic](https://lottiefiles.com/66934-tumbleweed-rolling)
 -   [Hello animation by Jusung](https://lottiefiles.com/38459-hello)
 
 ## 👤 Authors
